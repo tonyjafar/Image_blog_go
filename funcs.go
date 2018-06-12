@@ -4,19 +4,20 @@ import (
 	"net/http"
 )
 
-func loggedIn(r *http.Request) bool {
-	_, err := r.Cookie("session")
+func loggedIn(w http.ResponseWriter, r *http.Request) bool {
+	c, err := r.Cookie("session")
 	if err != nil {
 		return false
 	}
-	return true
-}
-
-func getUser(w http.ResponseWriter, r *http.Request) string {
-	c, err := r.Cookie("session")
-	if err != nil {
-		http.Redirect(w, r, "/sign_in", http.StatusSeeOther)
-		return ""
+	var name string
+	un := db.QueryRow("select username from image_blog.users where username=?", c.Value).Scan(&name)
+	if un != nil {
+		return false
 	}
-	return c.Value
+	if name == c.Value {
+		c.MaxAge = cAge
+		http.SetCookie(w, c)
+		return true
+	}
+	return false
 }
