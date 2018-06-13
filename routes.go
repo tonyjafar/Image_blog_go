@@ -8,8 +8,19 @@ import (
 )
 
 func index(w http.ResponseWriter, r *http.Request) {
-	x := loggedIn(w, r)
-	tpl.ExecuteTemplate(w, "index.gohtml", x)
+	c, err := r.Cookie("session")
+	if err == nil {
+		c.MaxAge = cAge
+		http.SetCookie(w, c)
+	}
+	if loggedIn(w, r) {
+		test := &data
+		test.loggedin = true
+	} else {
+		test := &data
+		test.loggedin = false
+	}
+	tpl.ExecuteTemplate(w, "index.gohtml", data)
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
@@ -31,23 +42,46 @@ func login(w http.ResponseWriter, r *http.Request) {
 		if row1 != nil {
 			userData.userPassErr = true
 		}
-		hp, _ := bcrypt.GenerateFromPassword([]byte(p), bcrypt.MinCost)
-		st := string(hp)
-		row2 := db.QueryRow("select password from image_blog.users where password=?", st).Scan(&pass)
+		row2 := db.QueryRow("select password from image_blog.users where username=?", un).Scan(&pass)
 		if row2 != nil {
 			userData.userPassErr = true
 		}
 		bp := []byte(p)
-		pe := bcrypt.CompareHashAndPassword(hp, bp)
+		st2 := []byte(pass)
+		pe := bcrypt.CompareHashAndPassword(st2, bp)
 		if un == name && pe == nil {
 			s, _ := uuid.NewV4()
 			c := &http.Cookie{
 				Name:   "session",
 				Value:  s.String(),
-				MaxAge: 30,
+				MaxAge: cAge,
 			}
 			http.SetCookie(w, c)
+			http.Redirect(w, r, "/images", http.StatusSeeOther)
+			return
+		} else {
+			userData.userPassErr = true
+			tpl.ExecuteTemplate(w, "signin.gohtml", userData)
+			return
 		}
 	}
-	tpl.ExecuteTemplate(w, "signin.gohtml", userData)
+	tpl.ExecuteTemplate(w, "signin.gohtml", nil)
+}
+
+func images(w http.ResponseWriter, r *http.Request) {
+	if !loggedIn(w, r) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	// TODO : implement upload/view
+	c, err := r.Cookie("session")
+	if err != nil {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	c.MaxAge = cAge
+	http.SetCookie(w, c)
+	test := &data
+	test.loggedin = true
+	tpl.ExecuteTemplate(w, "images.gohtml", data)
 }

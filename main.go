@@ -9,11 +9,15 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-const cAge int = 30
+const cAge int = 86400 * 3 // stay logged in for 3 days
 
 var tpl *template.Template
 var db *sql.DB
 var err error
+
+var data struct {
+	loggedin bool
+}
 
 func init() {
 	db, err = sql.Open("mysql", "root:*************@tcp(localhost:3306)/image_blog?charset=utf8")
@@ -29,5 +33,6 @@ func main() {
 	http.Handle("/favicon.ico", http.NotFoundHandler())
 	http.HandleFunc("/", index)
 	http.HandleFunc("/signin", login)
+	http.HandleFunc("/images", images)
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }
