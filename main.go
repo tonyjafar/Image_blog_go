@@ -20,7 +20,7 @@ var data struct {
 }
 
 func init() {
-	db, err = sql.Open("mysql", "root:*************@tcp(localhost:3306)/image_blog?charset=utf8")
+	db, err = sql.Open("mysql", marchIt())
 	if err != nil {
 		log.Fatal(err)
 	}
