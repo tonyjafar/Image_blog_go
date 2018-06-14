@@ -9,7 +9,10 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-const cAge int = 86400 * 3 // stay logged in for 3 days
+const (
+	cAge     int = 86400 * 3 // stay logged in for 3 days
+	pagesize     = 25
+)
 
 var tpl *template.Template
 var db *sql.DB
