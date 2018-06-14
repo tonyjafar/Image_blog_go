@@ -106,3 +106,20 @@ func signout(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 	return
 }
+
+func addImage(w http.ResponseWriter, r *http.Request) {
+	if !loggedIn(w, r) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	c, err := r.Cookie("session")
+	if err != nil {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+	c.MaxAge = cAge
+	http.SetCookie(w, c)
+	if r.Method == http.MethodPost {
+
+	}
+}

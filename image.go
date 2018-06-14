@@ -1,6 +1,10 @@
 package main
 
-import "time"
+import (
+	"crypto/sha1"
+	"fmt"
+	"time"
+)
 
 type Image struct {
 	ID          string
@@ -58,4 +62,12 @@ func Find(disc string) ([]Image, error) {
 
 	}
 	return allImages, nil
+}
+
+func NewImage() *Image {
+	h := sha1.New()
+	return &Image{
+		ID:        "img" + fmt.Sprintf("%x", h.Sum(nil)),
+		CreatedAt: time.Now(),
+	}
 }

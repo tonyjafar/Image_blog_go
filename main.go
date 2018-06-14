@@ -10,8 +10,7 @@ import (
 )
 
 const (
-	cAge     int = 86400 * 3 // stay logged in for 3 days
-	pagesize     = 25
+	cAge int = 86400 * 3 // stay logged in for 3 days
 )
 
 var tpl *template.Template
@@ -19,7 +18,9 @@ var db *sql.DB
 var err error
 
 var data struct {
-	loggedin bool
+	loggedin  bool
+	nofile    bool
+	fileerror bool
 }
 
 func init() {
@@ -38,5 +39,6 @@ func main() {
 	http.HandleFunc("/signin", login)
 	http.HandleFunc("/images", images)
 	http.HandleFunc("/signout", signout)
+	http.HandleFunc("/add_image", addImage)
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }
