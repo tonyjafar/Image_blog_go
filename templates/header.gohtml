@@ -25,11 +25,11 @@
       <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
       <ul class="nav navbar-nav">
       <li><a class="glyphicon glyphicon-home" href="/"></a></li>
-        {{if .loggedin}}
-        <li><a class="glyphicon glyphicon-home" href="/signout"></a></li>
-        <li><a class="glyphicon glyphicon-off" href="/images"></a></li>
+        {{if .}}
+        <li><a class="glyphicon glyphicon-log-out" href="/signout"></a></li>
+        <li><a class="glyphicon glyphicon-picture" href="/images"></a></li>
         {{else}}
-        <li><a class="glyphicon glyphicon-off" href="/signin"></a></li>
+        <li><a class="glyphicon glyphicon-log-in" href="/signin"></a></li>
         {{end}}
           </ul>
 

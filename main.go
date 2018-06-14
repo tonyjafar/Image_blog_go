@@ -34,5 +34,6 @@ func main() {
 	http.HandleFunc("/", index)
 	http.HandleFunc("/signin", login)
 	http.HandleFunc("/images", images)
+	http.HandleFunc("/signout", signout)
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }

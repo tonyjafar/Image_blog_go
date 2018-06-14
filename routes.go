@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/satori/go.uuid"
@@ -20,7 +21,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 		test := &data
 		test.loggedin = false
 	}
-	tpl.ExecuteTemplate(w, "index.gohtml", data)
+	tpl.ExecuteTemplate(w, "index.gohtml", data.loggedin)
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
@@ -38,13 +39,15 @@ func login(w http.ResponseWriter, r *http.Request) {
 		p := r.FormValue("password")
 		var name string
 		var pass string
-		row1 := db.QueryRow("select username from image_blog.users where username=?", un).Scan(&name)
+		row1 := db.QueryRow("select username from image_blog.Users where username=?", un).Scan(&name)
 		if row1 != nil {
 			userData.userPassErr = true
+			fmt.Println(row1)
 		}
-		row2 := db.QueryRow("select password from image_blog.users where username=?", un).Scan(&pass)
+		row2 := db.QueryRow("select password from image_blog.Users where username=?", un).Scan(&pass)
 		if row2 != nil {
 			userData.userPassErr = true
+			fmt.Println(row2)
 		}
 		bp := []byte(p)
 		st2 := []byte(pass)
@@ -83,5 +86,23 @@ func images(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, c)
 	test := &data
 	test.loggedin = true
-	tpl.ExecuteTemplate(w, "images.gohtml", data)
+	tpl.ExecuteTemplate(w, "images.gohtml", data.loggedin)
+}
+
+func signout(w http.ResponseWriter, r *http.Request) {
+	if !loggedIn(w, r) {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+	c, err := r.Cookie("session")
+	if err != nil {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+	c.MaxAge = -1
+	http.SetCookie(w, c)
+	test := &data
+	test.loggedin = false
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+	return
 }
