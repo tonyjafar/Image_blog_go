@@ -126,17 +126,15 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 	c.MaxAge = cAge
 	http.SetCookie(w, c)
 	if r.Method == http.MethodPost {
-		var errors struct {
-			fileError bool
-			dbError   bool
-		}
+		errors := make(map[string]bool)
 		tn := time.Now()
 		l := r.FormValue("location")
 		d := r.FormValue("description")
-		mf, fh, oerr := r.FormFile("nf")
-		if oerr != nil {
-			errors.fileError = true
-			tpl.ExecuteTemplate(w, "uplimage", errors)
+		mf, fh, err := r.FormFile("nf")
+		if err != nil {
+			errors["fileError"] = true
+			tpl.ExecuteTemplate(w, "uplimage.gohtml", errors)
+			return
 		}
 		defer mf.Close()
 		s := fh.Size
@@ -144,16 +142,18 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 		h := sha1.New()
 		io.Copy(h, mf)
 		n := fmt.Sprintf("%x", h.Sum(nil)) + "." + ext
-		wd, werr := os.Getwd()
-		if werr != nil {
-			errors.fileError = true
-			tpl.ExecuteTemplate(w, "uplimage", errors)
+		wd, err := os.Getwd()
+		if err != nil {
+			errors["fileError"] = true
+			tpl.ExecuteTemplate(w, "uplimage.gohtml", errors)
+			return
 		}
 		path := filepath.Join(wd, "data", n)
-		nf, herr := os.Create(path)
-		if herr != nil {
-			errors.fileError = true
-			tpl.ExecuteTemplate(w, "uplimage", errors)
+		nf, err := os.Create(path)
+		if err != nil {
+			errors["fileError"] = true
+			tpl.ExecuteTemplate(w, "uplimage.gohtml", errors)
+			return
 		}
 		defer nf.Close()
 		mf.Seek(0, 0)
@@ -161,16 +161,18 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 		image := &Image{n, l, s, tn, d}
 		i := Save(image)
 		if i != nil {
-			te, fr := os.Open(path)
-			if fr == nil {
+			te, err := os.Open(path)
+			if err == nil {
 				defer te.Close()
 				os.Remove(path)
 			}
-			errors.dbError = true
-			tpl.ExecuteTemplate(w, "uplimage", errors)
+			errors["fileError"] = true
+			tpl.ExecuteTemplate(w, "uplimage.gohtml", errors)
+			return
 		}
-		errors.dbError = false
-		errors.fileError = false
+		errors["fileError"] = false
 	}
-	tpl.ExecuteTemplate(w, "uplimage.gohtml", nil)
+	test := &data
+	test.loggedin = true
+	tpl.ExecuteTemplate(w, "uplimage.gohtml", data.loggedin)
 }

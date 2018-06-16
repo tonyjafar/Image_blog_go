@@ -1,4 +1,8 @@
 {{template "header" .}}
+<br>
+<br>
+<div class="container">
+  <div class="jumbotron">
 <div class="row">
 	<div class="col-md-6 col-md-offset-3">
 		<h1>Add An Image</h1>
@@ -19,4 +23,17 @@
 		</form>
 	</div>
 </div>
+
+{{range $i := .}}
+	{{if .}}
+	<br>
+<br>
+	<div class="alert alert-danger">
+  <strong>Error!</strong> Somethin bad happened please try again.
+</div>
+	{{end}}
+	{{end}}
+	</div>
+</div>
+{{template "footer"}}
 
