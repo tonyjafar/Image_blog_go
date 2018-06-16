@@ -144,13 +144,12 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 		h := sha1.New()
 		io.Copy(h, mf)
 		n := fmt.Sprintf("%x", h.Sum(nil)) + "." + ext
-		fname := n + "." + ext
 		wd, werr := os.Getwd()
 		if werr != nil {
 			errors.fileError = true
 			tpl.ExecuteTemplate(w, "uplimage", errors)
 		}
-		path := filepath.Join(wd, "data", fname)
+		path := filepath.Join(wd, "data", n)
 		nf, herr := os.Create(path)
 		if herr != nil {
 			errors.fileError = true
