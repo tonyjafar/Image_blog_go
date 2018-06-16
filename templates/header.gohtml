@@ -28,6 +28,12 @@
         {{if .}}
         <li><a class="glyphicon glyphicon-log-out" href="/signout"></a></li>
         <li><a class="glyphicon glyphicon-picture" href="/images"></a></li>
+        <li>
+        <form class="form-inline my-2 my-lg-0" , method="POST">
+      <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+      <button class="btn btn-outline-success my-2 my-sm-0" type="submit" action="/search">Search</button>
+    </form>
+</li>
         {{else}}
         <li><a class="glyphicon glyphicon-log-in" href="/signin"></a></li>
         {{end}}
