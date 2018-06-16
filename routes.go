@@ -1,8 +1,14 @@
 package main
 
 import (
+	"crypto/sha1"
 	"fmt"
+	"io"
 	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
 
 	"github.com/satori/go.uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -122,4 +128,52 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 
 	}
+	if r.Method == http.MethodPost {
+		var errors struct {
+			fileError bool
+			dbError   bool
+		}
+		tn := time.Now()
+		l := r.FormValue("location")
+		d := r.FormValue("description")
+		mf, fh, oerr := r.FormFile("nf")
+		if oerr != nil {
+			errors.fileError = true
+			tpl.ExecuteTemplate(w, "uplimage", errors)
+		}
+		defer mf.Close()
+		s := fh.Size
+		ext := strings.Split(fh.Filename, ".")[1]
+		h := sha1.New()
+		io.Copy(h, mf)
+		n := fmt.Sprintf("%x", h.Sum(nil)) + "." + ext
+		fname := n + "." + ext
+		wd, werr := os.Getwd()
+		if werr != nil {
+			errors.fileError = true
+			tpl.ExecuteTemplate(w, "uplimage", errors)
+		}
+		path := filepath.Join(wd, "data", fname)
+		nf, herr := os.Create(path)
+		if herr != nil {
+			errors.fileError = true
+			tpl.ExecuteTemplate(w, "uplimage", errors)
+		}
+		defer nf.Close()
+		mf.Seek(0, 0)
+		io.Copy(nf, mf)
+		image := &Image{n, l, s, tn, d}
+		i := Save(image)
+		if i != nil {
+			_, fr := os.Open(path)
+			if fr == nil {
+				os.Remove(path)
+			}
+			errors.dbError = true
+			tpl.ExecuteTemplate(w, "uplimage", errors)
+		}
+		errors.dbError = false
+		errors.fileError = false
+	}
+	tpl.ExecuteTemplate(w, "uplimage.gohtml", nil)
 }
