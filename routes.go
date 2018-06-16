@@ -163,7 +163,7 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 		i := Save(image)
 		if i != nil {
 			_, fr := os.Open(path)
-			if fr == nil {
+			if fr != nil {
 				os.Remove(path)
 			}
 			errors.dbError = true
