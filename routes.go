@@ -126,9 +126,6 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 	c.MaxAge = cAge
 	http.SetCookie(w, c)
 	if r.Method == http.MethodPost {
-
-	}
-	if r.Method == http.MethodPost {
 		var errors struct {
 			fileError bool
 			dbError   bool
