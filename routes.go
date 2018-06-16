@@ -16,6 +16,7 @@ import (
 
 func index(w http.ResponseWriter, r *http.Request) {
 	c, err := r.Cookie("session")
+	list := []string{}
 	if err == nil {
 		c.MaxAge = cAge
 		http.SetCookie(w, c)
@@ -23,11 +24,32 @@ func index(w http.ResponseWriter, r *http.Request) {
 	if loggedIn(w, r) {
 		test := &data
 		test.loggedin = true
+		rows, err := db.Query(
+			`
+			SELECT name FROM
+    image_blog.images
+ORDER BY created_at
+LIMIT 6
+			`,
+		)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		var name string
+		for rows.Next() {
+			err := rows.Scan(&name)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			list = append(list, name)
+		}
 	} else {
 		test := &data
 		test.loggedin = false
 	}
-	tpl.ExecuteTemplate(w, "index.gohtml", data.loggedin)
+	tpl.ExecuteTemplate(w, "index.gohtml", list)
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
@@ -175,4 +197,18 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 	test := &data
 	test.loggedin = true
 	tpl.ExecuteTemplate(w, "uplimage.gohtml", data.loggedin)
+}
+
+func handleFileServer(dir, prefix string) http.HandlerFunc {
+	fs := http.FileServer(http.Dir(dir))
+	realHandler := http.StripPrefix(prefix, fs).ServeHTTP
+	return func(w http.ResponseWriter, r *http.Request) {
+		if loggedIn(w, r) {
+			realHandler(w, r)
+			return
+		}
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
 }

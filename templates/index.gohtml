@@ -9,4 +9,14 @@
     {{end}}
   </div>
 </div>
+{{range $i := .}}
+
+     
+     <div class="col-xs-12 col-sm-6 col-md-3">
+				<a href="/assets/{{.}}" class="thumbnail">
+					<img src="/assets/{{.}}">
+				</a>
+			</div>
+      
+{{end}}
 {{template "footer"}}

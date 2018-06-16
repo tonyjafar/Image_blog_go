@@ -34,6 +34,7 @@ func init() {
 
 func main() {
 	defer db.Close()
+	http.HandleFunc("/assets/", handleFileServer("./data", "/assets"))
 	http.Handle("/favicon.ico", http.NotFoundHandler())
 	http.HandleFunc("/", index)
 	http.HandleFunc("/signin", login)
