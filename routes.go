@@ -49,6 +49,10 @@ LIMIT 6
 		test := &data
 		test.loggedin = false
 	}
+	if len(list) == 0 {
+		tpl.ExecuteTemplate(w, "index.gohtml", data.loggedin)
+		return
+	}
 	tpl.ExecuteTemplate(w, "index.gohtml", list)
 }
 
