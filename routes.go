@@ -108,17 +108,42 @@ func images(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
 		return
 	}
-	// TODO : implement upload/view
+	// TODO : Add Pagination.
 	c, err := r.Cookie("session")
 	if err != nil {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
 		return
 	}
+	list := []string{}
 	c.MaxAge = cAge
 	http.SetCookie(w, c)
 	test := &data
 	test.loggedin = true
-	tpl.ExecuteTemplate(w, "images.gohtml", data.loggedin)
+	rows, err := db.Query(
+		`
+		SELECT name FROM
+image_blog.images
+ORDER BY created_at DESC
+		`,
+	)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	var name string
+	for rows.Next() {
+		err := rows.Scan(&name)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		list = append(list, name)
+	}
+	if len(list) == 0 {
+		tpl.ExecuteTemplate(w, "images.gohtml", data.loggedin)
+		return
+	}
+	tpl.ExecuteTemplate(w, "images.gohtml", list)
 }
 
 func signout(w http.ResponseWriter, r *http.Request) {
@@ -156,45 +181,48 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 		tn := time.Now()
 		l := r.FormValue("location")
 		d := r.FormValue("description")
-		mf, fh, err := r.FormFile("nf")
-		if err != nil {
-			errors["fileError"] = true
-			tpl.ExecuteTemplate(w, "uplimage.gohtml", errors)
-			return
-		}
-		defer mf.Close()
-		s := fh.Size
-		ext := strings.Split(fh.Filename, ".")[1]
-		h := sha1.New()
-		io.Copy(h, mf)
-		n := fmt.Sprintf("%x", h.Sum(nil)) + "." + ext
-		wd, err := os.Getwd()
-		if err != nil {
-			errors["fileError"] = true
-			tpl.ExecuteTemplate(w, "uplimage.gohtml", errors)
-			return
-		}
-		path := filepath.Join(wd, "data", n)
-		nf, err := os.Create(path)
-		if err != nil {
-			errors["fileError"] = true
-			tpl.ExecuteTemplate(w, "uplimage.gohtml", errors)
-			return
-		}
-		defer nf.Close()
-		mf.Seek(0, 0)
-		io.Copy(nf, mf)
-		image := &Image{n, l, s, tn, d}
-		i := Save(image)
-		if i != nil {
-			te, err := os.Open(path)
-			if err == nil {
-				defer te.Close()
-				os.Remove(path)
+		fhs := r.MultipartForm.File["nf"]
+		for _, fhm := range fhs {
+			mf, err := fhm.Open()
+			if err != nil {
+				errors["fileError"] = true
+				tpl.ExecuteTemplate(w, "uplimage.gohtml", errors)
+				return
 			}
-			errors["fileError"] = true
-			tpl.ExecuteTemplate(w, "uplimage.gohtml", errors)
-			return
+			defer mf.Close()
+			s := fhm.Size
+			ext := strings.Split(fhm.Filename, ".")[1]
+			h := sha1.New()
+			io.Copy(h, mf)
+			n := fmt.Sprintf("%x", h.Sum(nil)) + "." + ext
+			wd, err := os.Getwd()
+			if err != nil {
+				errors["fileError"] = true
+				tpl.ExecuteTemplate(w, "uplimage.gohtml", errors)
+				return
+			}
+			path := filepath.Join(wd, "data", n)
+			nf, err := os.Create(path)
+			if err != nil {
+				errors["fileError"] = true
+				tpl.ExecuteTemplate(w, "uplimage.gohtml", errors)
+				return
+			}
+			defer nf.Close()
+			mf.Seek(0, 0)
+			io.Copy(nf, mf)
+			image := &Image{n, l, s, tn, d}
+			i := Save(image)
+			if i != nil {
+				te, err := os.Open(path)
+				if err == nil {
+					defer te.Close()
+					os.Remove(path)
+				}
+				errors["fileError"] = true
+				tpl.ExecuteTemplate(w, "uplimage.gohtml", errors)
+				return
+			}
 		}
 		errors["fileError"] = false
 	}
