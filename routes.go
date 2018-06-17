@@ -273,6 +273,7 @@ func search(w http.ResponseWriter, r *http.Request) {
 		SELECT name FROM
 image_blog.images
 WHERE description LIKE ?
+ORDER BY created_at DESC
 		`, newQuery,
 		)
 		if err != nil {
