@@ -244,3 +244,50 @@ func handleFileServer(dir, prefix string) http.HandlerFunc {
 	}
 
 }
+
+func search(w http.ResponseWriter, r *http.Request) {
+	if !loggedIn(w, r) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	c, err := r.Cookie("session")
+	if err != nil {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+	c.MaxAge = cAge
+	list := []string{}
+	test := &data
+	test.loggedin = true
+	//SELECT * FROM items WHERE items.xml LIKE '%123456%'
+	if r.Method == http.MethodPost {
+		s := r.FormValue("search")
+		newQuery := "%" + s + "%"
+
+		rows, err := db.Query(
+			`
+		SELECT name FROM
+image_blog.images
+WHERE description LIKE ?
+		`, newQuery,
+		)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		var name string
+		for rows.Next() {
+			err := rows.Scan(&name)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			list = append(list, name)
+		}
+	}
+	if len(list) == 0 {
+		tpl.ExecuteTemplate(w, "search.gohtml", data.loggedin)
+		return
+	}
+	tpl.ExecuteTemplate(w, "search.gohtml", list)
+}
