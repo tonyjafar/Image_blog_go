@@ -262,6 +262,10 @@ func search(w http.ResponseWriter, r *http.Request) {
 	//SELECT * FROM items WHERE items.xml LIKE '%123456%'
 	if r.Method == http.MethodPost {
 		s := r.FormValue("search")
+		if s == "" {
+			tpl.ExecuteTemplate(w, "search.gohtml", data.loggedin)
+			return
+		}
 		newQuery := "%" + s + "%"
 
 		rows, err := db.Query(
