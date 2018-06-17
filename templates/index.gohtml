@@ -11,16 +11,15 @@
 </div>
 <div class="container">
 {{range $i := .}} 
+
      <div class="col-xs-12 col-sm-6 col-md-3">
 				<a href="/assets/{{.}}" class="thumbnail">
 					<img src="/assets/{{.}}">
 				</a>
 			</div>
-{{else}}
 
-<div class="container">
+{{else}}
 <h1>No images found click <a href="/add_imagehere">here</a> to add some</h1>
-</div>
 {{end}}
+      </div>
 {{template "footer"}}
-</div>

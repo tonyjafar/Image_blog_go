@@ -28,7 +28,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 			`
 			SELECT name FROM
     image_blog.images
-ORDER BY created_at
+ORDER BY created_at DESC
 LIMIT 6
 			`,
 		)
