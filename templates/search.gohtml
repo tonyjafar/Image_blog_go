@@ -11,21 +11,27 @@
   <button type="submit" class="btn btn-default">Submit</button>
 </form> 
 </div>
+</div>
 <div class="container">
-
-
-
-{{range $i := .}} 
-
-     <div class="col-xs-12 col-sm-6 col-md-3">
-				<a href="/assets/{{.}}" class="thumbnail">
-					<img src="/assets/{{.}}">
-				</a>
-			</div>
-
+<div class="row justify-content-center">
+<div class="col-md-8">
+{{range .}}
+<div class="row">
+<a href="/assets/{{.}}"  data-toggle="lightbox" data-gallery="example-gallery" class="col-sm-4">
+                <img src="/assets/{{.}}" class="img-fluid">
+            </a>
+            </div>
 {{end}}
 
-      </div>
+</div>
+</div>
+</dev>
+<script>
+$(document).on('click', '[data-toggle="lightbox"]', function(event) {
+                event.preventDefault();
+                $(this).ekkoLightbox();
+            });
+</script>
 <br>
 <div class="container">
 {{ if not . }}
