@@ -1,6 +1,6 @@
 # Image_blog_go
 ## Project Structure
-.
+`.
 ├── assets
 ├── conf.json
 ├── data
@@ -19,7 +19,7 @@
     ├── search.gohtml
     ├── signin.gohtml
     └── uplimage.gohtml
-
+`
 ## User Table
 id, username, password
 password created using golang.org/x/crypto/bcrypt
