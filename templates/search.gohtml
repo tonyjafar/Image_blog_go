@@ -15,16 +15,14 @@
 <div class="container">
 <div class="row justify-content-center">
 <div class="col-md-8">
-{{range .}}
 <div class="row">
-<a href="/assets/{{.}}"  data-toggle="lightbox" data-gallery="example-gallery" class="col-sm-4">
-                <img src="/assets/thumb/{{.}}" class="img-fluid">
-            </a>
+{{range .}}
+<a href="/assets/{{.}}"  data-toggle="lightbox" data-gallery="example-gallery" class="col-sm-4"><img src="/assets/thumb/{{.}}" class="img-fluid img-thumbnail"></a>
 {{end}}
-
 </div>
 </div>
-</dev>
+</div>
+</div>
 <script>
 $(document).on('click', '[data-toggle="lightbox"]', function(event) {
                 event.preventDefault();
