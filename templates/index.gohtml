@@ -15,7 +15,7 @@
 {{range .}}
 <div class="row">
 <a href="/assets/{{.}}"  data-toggle="lightbox" data-gallery="example-gallery" class="col-sm-4">
-                <img src="/assets/{{.}}" class="img-fluid">
+                <img src="/assets/thumb/{{.}}" class="img-fluid">
             </a>
 {{end}}
 </div>
@@ -28,5 +28,4 @@ $(document).on('click', '[data-toggle="lightbox"]', function(event) {
                 $(this).ekkoLightbox();
             });
 </script>
-{{template "footer"}}
 {{template "footer"}}

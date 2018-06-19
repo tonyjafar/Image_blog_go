@@ -29,6 +29,7 @@ func Save(image *Image) error {
 	return err
 }
 
+/*
 func Find(disc string) ([]Image, error) {
 	rows, err := db.Query(
 		`
@@ -58,3 +59,4 @@ func Find(disc string) ([]Image, error) {
 	}
 	return allImages, nil
 }
+*/

@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/disintegration/imaging"
 	"github.com/satori/go.uuid"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -213,7 +214,16 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 			io.Copy(nf, mf)
 			image := &Image{n, l, s, tn, d}
 			i := Save(image)
-			if i != nil {
+			scrImage, err := imaging.Open("./data/" + image.Name)
+			if err != nil {
+				errors["fileError"] = true
+				tpl.ExecuteTemplate(w, "uplimage.gohtml", errors)
+				return
+			}
+			dstImage := imaging.Thumbnail(scrImage, widthThumbnail, widthThumbnail, imaging.Lanczos)
+			destination := "./data/thumb/" + image.Name
+			it := imaging.Save(dstImage, destination)
+			if i != nil && it != nil {
 				te, err := os.Open(path)
 				if err == nil {
 					defer te.Close()
