@@ -24,12 +24,25 @@ var data struct {
 	fileerror bool
 }
 
+var num = template.FuncMap{
+	"add": add,
+	"red": red,
+}
+
+func add(p int) int {
+	return p + 1
+}
+
+func red(p int) int {
+	return p - 1
+}
+
 func init() {
 	db, err = sql.Open("mysql", marchIt())
 	if err != nil {
 		log.Fatal(err)
 	}
-	tpl = template.Must(template.ParseGlob("templates/*.gohtml"))
+	tpl = template.Must(template.New("").Funcs(num).ParseGlob("templates/*.gohtml"))
 
 }
 

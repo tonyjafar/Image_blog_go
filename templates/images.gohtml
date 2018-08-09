@@ -5,14 +5,21 @@
 </div>
 </div>
 <div class="container">
-<h3>{{len .}} Images</h3>
+<h3>{{.ListLength}} Images</h3>
 <div class="row justify-content-center">
 <div class="col-md-8">
 <div class="row">
-{{range .}}
+{{range .ListMem}}
 <a href="/assets/{{.}}"  data-toggle="lightbox" data-gallery="example-gallery" class="col-sm-4"><img src="/assets/thumb/{{.}}" class="img-fluid img-circle"></a>
 {{end}}
 </div>
+{{if .Prev}}
+<a class="btn btn-info" href="/images?page={{red .PageNumber}}">Prev</button>
+{{end}}
+{{if .Next}}
+<a class="btn btn-info" href="/images?page={{add .PageNumber}}">Next</button>
+{{end}}
+<a class="btn btn-info" href="/images?all">All Images</a>
 </div>
 </div>
 </div>

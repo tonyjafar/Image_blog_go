@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -109,7 +110,6 @@ func images(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
 		return
 	}
-	// TODO : Add Pagination.
 	c, err := r.Cookie("session")
 	if err != nil {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
@@ -144,7 +144,54 @@ ORDER BY created_at DESC
 		tpl.ExecuteTemplate(w, "images.gohtml", data.loggedin)
 		return
 	}
-	tpl.ExecuteTemplate(w, "images.gohtml", list)
+	var SentVars struct {
+		ListLength int
+		PageNumber int
+		Next       bool
+		Prev       bool
+		ListMem    []string
+		ListStart  int
+		ListEnd    int
+	}
+	totalPics := len(list)
+	SentVars.ListLength = totalPics
+	if strings.Contains(r.RequestURI, "page") {
+		r.ParseForm()
+		page := r.FormValue("page")
+		SentVars.PageNumber, _ = strconv.Atoi(page)
+		SentVars.ListStart = (SentVars.PageNumber * 30) + 1
+		SentVars.ListEnd = SentVars.ListStart + 30
+		if totalPics <= SentVars.ListEnd {
+			SentVars.ListMem = list[SentVars.ListStart:totalPics]
+			SentVars.Next = false
+		} else {
+			SentVars.ListMem = list[SentVars.ListStart:SentVars.ListEnd]
+			SentVars.Next = true
+		}
+		if SentVars.PageNumber == 1 {
+			SentVars.Prev = false
+		} else {
+			SentVars.Prev = true
+		}
+		tpl.ExecuteTemplate(w, "images.gohtml", &SentVars)
+		return
+	} else if !strings.Contains(r.RequestURI, "all") {
+		SentVars.Next = true
+		SentVars.Prev = false
+		SentVars.PageNumber = 1
+		SentVars.ListMem = list[:31]
+		tpl.ExecuteTemplate(w, "images.gohtml", &SentVars)
+		return
+	} else {
+		SentVars.ListLength = totalPics
+		SentVars.Next = false
+		SentVars.Prev = false
+		SentVars.PageNumber = 1
+		SentVars.ListMem = list
+		tpl.ExecuteTemplate(w, "images.gohtml", &SentVars)
+		return
+	}
+
 }
 
 func signout(w http.ResponseWriter, r *http.Request) {
@@ -305,4 +352,5 @@ ORDER BY created_at DESC
 		return
 	}
 	tpl.ExecuteTemplate(w, "search.gohtml", list)
+
 }
