@@ -155,7 +155,7 @@ ORDER BY created_at DESC
 	}
 	totalPics := len(list)
 	SentVars.ListLength = totalPics
-	if strings.Contains(r.RequestURI, "page") {
+	if (strings.Contains(r.RequestURI, "page")) && (!strings.Contains(r.RequestURI, "page=1")) {
 		r.ParseForm()
 		page := r.FormValue("page")
 		SentVars.PageNumber, _ = strconv.Atoi(page)
