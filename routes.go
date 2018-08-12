@@ -176,10 +176,15 @@ ORDER BY created_at DESC
 		tpl.ExecuteTemplate(w, "images.gohtml", &SentVars)
 		return
 	} else if !strings.Contains(r.RequestURI, "all") {
-		SentVars.Next = true
 		SentVars.Prev = false
 		SentVars.PageNumber = 1
-		SentVars.ListMem = list[:31]
+		if imageSlice >= SentVars.ListLength {
+			SentVars.Next = false
+			SentVars.ListMem = list[:SentVars.ListLength]
+		} else {
+			SentVars.Next = true
+			SentVars.ListMem = list[:31]
+		}
 		tpl.ExecuteTemplate(w, "images.gohtml", &SentVars)
 		return
 	} else {
