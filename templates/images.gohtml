@@ -6,6 +6,7 @@
 </div>
 <div class="container">
 <h3>{{.ListLength}} Images</h3>
+<a class="btn btn-info" href="/images?all">View All Images</a>
 <div class="row justify-content-center">
 <div class="col-md-8">
 <div class="row">
@@ -13,13 +14,13 @@
 <a href="/assets/{{.}}"  data-toggle="lightbox" data-gallery="example-gallery" class="col-sm-4"><img src="/assets/thumb/{{.}}" class="img-fluid img-circle"></a>
 {{end}}
 </div>
+<br><br>
 {{if .Prev}}
-<a class="btn btn-info" href="/images?page={{red .PageNumber}}">Prev</button>
+<a class="btn btn-info pull-left" href="/images?page={{red .PageNumber}}">Prev</a>
 {{end}}
 {{if .Next}}
-<a class="btn btn-info" href="/images?page={{add .PageNumber}}">Next</button>
+<a class="btn btn-info pull-right" href="/images?page={{add .PageNumber}}">Next</a>
 {{end}}
-<a class="btn btn-info" href="/images?all">All Images</a>
 </div>
 </div>
 </div>
