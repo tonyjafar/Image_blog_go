@@ -183,7 +183,7 @@ ORDER BY created_at DESC
 			SentVars.ListMem = list[:SentVars.ListLength]
 		} else {
 			SentVars.Next = true
-			SentVars.ListMem = list[:31]
+			SentVars.ListMem = list[:30]
 		}
 		tpl.ExecuteTemplate(w, "images.gohtml", &SentVars)
 		return
