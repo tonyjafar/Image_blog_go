@@ -22,7 +22,7 @@
 ```
 ## User Table
 id, username, password
-password created using golang.org/x/crypto/bcrypt
+, password created using golang.org/x/crypto/bcrypt
 ```
 func GenerateFromPassword(password []byte, cost int) ([]byte, error) {
 	p, err := newFromPassword(password, cost)
@@ -38,7 +38,8 @@ converting it to string
 name, location, description, size, created_at
 
 ## conf.json
-```{
+```
+{
     "username": "*******",
     "password": "*********",
     "ipaddress": "127.0.0.1",
