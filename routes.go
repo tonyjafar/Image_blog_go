@@ -159,8 +159,8 @@ ORDER BY created_at DESC
 		r.ParseForm()
 		page := r.FormValue("page")
 		SentVars.PageNumber, _ = strconv.Atoi(page)
-		SentVars.ListStart = (SentVars.PageNumber * 30) + 1
-		SentVars.ListEnd = SentVars.ListStart + 30
+		SentVars.ListStart = (SentVars.PageNumber * imageSlice) + 1
+		SentVars.ListEnd = SentVars.ListStart + imageSlice
 		if totalPics <= SentVars.ListEnd {
 			SentVars.ListMem = list[SentVars.ListStart:totalPics]
 			SentVars.Next = false
@@ -183,7 +183,7 @@ ORDER BY created_at DESC
 			SentVars.ListMem = list[:SentVars.ListLength]
 		} else {
 			SentVars.Next = true
-			SentVars.ListMem = list[:30]
+			SentVars.ListMem = list[:imageSlice]
 		}
 		tpl.ExecuteTemplate(w, "images.gohtml", &SentVars)
 		return
