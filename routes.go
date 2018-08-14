@@ -160,7 +160,7 @@ ORDER BY created_at DESC
 		page := r.FormValue("page")
 		SentVars.PageNumber, _ = strconv.Atoi(page)
 		SentVars.ListStart = ((SentVars.PageNumber - 1) * imageSlice)
-		SentVars.ListEnd = SentVars.ListStart + imageSlice + 1
+		SentVars.ListEnd = SentVars.ListStart + imageSlice
 		if totalPics <= SentVars.ListEnd {
 			SentVars.ListMem = list[SentVars.ListStart:totalPics]
 			SentVars.Next = false
@@ -183,7 +183,7 @@ ORDER BY created_at DESC
 			SentVars.ListMem = list[:SentVars.ListLength]
 		} else {
 			SentVars.Next = true
-			SentVars.ListMem = list[:imageSlice+1]
+			SentVars.ListMem = list[:imageSlice]
 		}
 		tpl.ExecuteTemplate(w, "images.gohtml", &SentVars)
 		return
@@ -374,7 +374,7 @@ ORDER BY created_at DESC
 	if strings.Contains(r.RequestURI, "page") && (!strings.HasSuffix(r.RequestURI, "page=1")) {
 		SentVars.PageNumber, _ = strconv.Atoi(page)
 		SentVars.ListStart = ((SentVars.PageNumber - 1) * imageSlice)
-		SentVars.ListEnd = SentVars.ListStart + imageSlice + 1
+		SentVars.ListEnd = SentVars.ListStart + imageSlice
 		if totalPics <= SentVars.ListEnd {
 			SentVars.ListMem = list[SentVars.ListStart:totalPics]
 			SentVars.Next = false
@@ -397,7 +397,7 @@ ORDER BY created_at DESC
 			SentVars.ListMem = list[:SentVars.ListLength]
 		} else {
 			SentVars.Next = true
-			SentVars.ListMem = list[:imageSlice+1]
+			SentVars.ListMem = list[:imageSlice]
 		}
 		tpl.ExecuteTemplate(w, "search.gohtml", &SentVars)
 		return
