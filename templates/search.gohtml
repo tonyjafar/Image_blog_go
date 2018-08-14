@@ -13,13 +13,21 @@
 </div>
 </div>
 <div class="container">
+<a class="btn btn-info" href="/search?search={{.Search}}&all">View All Images</a>
 <div class="row justify-content-center">
 <div class="col-md-8">
 <div class="row">
-{{range .}}
+{{range .ListMem}}
 <a href="/assets/{{.}}"  data-toggle="lightbox" data-gallery="example-gallery" class="col-sm-4"><img src="/assets/thumb/{{.}}" class="img-fluid img-thumbnail"></a>
 {{end}}
 </div>
+<br><br>
+{{if .Prev}}
+<a class="btn btn-info pull-left" href="/search?search={{.Search}}&page={{red .PageNumber}}">Previous Page</a>
+{{end}}
+{{if .Next}}
+<a class="btn btn-info pull-right" href="/search?search={{.Search}}&page={{add .PageNumber}}">Next Page</a>
+{{end}}
 </div>
 </div>
 </div>
@@ -34,7 +42,7 @@ $(document).on('click', '[data-toggle="lightbox"]', function(event) {
 {{ if not . }}
     <h4>Sorry. No matching results found</h4>
 {{else}}
-<h4>{{len .}} matching results found</h4>
+<h4>{{.ListLength}} matching results found</h4>
 {{ end }}
 </div>
 <br>

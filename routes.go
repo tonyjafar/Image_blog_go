@@ -159,8 +159,8 @@ ORDER BY created_at DESC
 		r.ParseForm()
 		page := r.FormValue("page")
 		SentVars.PageNumber, _ = strconv.Atoi(page)
-		SentVars.ListStart = (SentVars.PageNumber * imageSlice) + 1
-		SentVars.ListEnd = SentVars.ListStart + imageSlice
+		SentVars.ListStart = ((SentVars.PageNumber - 1) * imageSlice)
+		SentVars.ListEnd = SentVars.ListStart + imageSlice + 1
 		if totalPics <= SentVars.ListEnd {
 			SentVars.ListMem = list[SentVars.ListStart:totalPics]
 			SentVars.Next = false
@@ -183,7 +183,7 @@ ORDER BY created_at DESC
 			SentVars.ListMem = list[:SentVars.ListLength]
 		} else {
 			SentVars.Next = true
-			SentVars.ListMem = list[:imageSlice]
+			SentVars.ListMem = list[:imageSlice+1]
 		}
 		tpl.ExecuteTemplate(w, "images.gohtml", &SentVars)
 		return
@@ -322,7 +322,7 @@ func search(w http.ResponseWriter, r *http.Request) {
 	test := &data
 	test.loggedin = true
 	//SELECT * FROM items WHERE items.xml LIKE '%123456%'
-	if r.Method == http.MethodPost {
+	if r.Method == http.MethodPost || strings.Contains(r.RequestURI, "page") || strings.Contains(r.RequestURI, "all") {
 		s := r.FormValue("search")
 		if s == "" {
 			tpl.ExecuteTemplate(w, "search.gohtml", data.loggedin)
@@ -356,6 +356,59 @@ ORDER BY created_at DESC
 		tpl.ExecuteTemplate(w, "search.gohtml", data.loggedin)
 		return
 	}
-	tpl.ExecuteTemplate(w, "search.gohtml", list)
+	var SentVars struct {
+		ListLength int
+		PageNumber int
+		Next       bool
+		Prev       bool
+		ListMem    []string
+		ListStart  int
+		ListEnd    int
+		Search     string
+	}
+	totalPics := len(list)
+	SentVars.ListLength = totalPics
+	r.ParseForm()
+	page := r.FormValue("page")
+	SentVars.Search = r.FormValue("search")
+	if strings.Contains(r.RequestURI, "page") && (!strings.HasSuffix(r.RequestURI, "page=1")) {
+		SentVars.PageNumber, _ = strconv.Atoi(page)
+		SentVars.ListStart = ((SentVars.PageNumber - 1) * imageSlice)
+		SentVars.ListEnd = SentVars.ListStart + imageSlice + 1
+		if totalPics <= SentVars.ListEnd {
+			SentVars.ListMem = list[SentVars.ListStart:totalPics]
+			SentVars.Next = false
+		} else {
+			SentVars.ListMem = list[SentVars.ListStart:SentVars.ListEnd]
+			SentVars.Next = true
+		}
+		if SentVars.PageNumber == 1 {
+			SentVars.Prev = false
+		} else {
+			SentVars.Prev = true
+		}
+		tpl.ExecuteTemplate(w, "search.gohtml", &SentVars)
+		return
+	} else if !strings.Contains(r.RequestURI, "all") {
+		SentVars.Prev = false
+		SentVars.PageNumber = 1
+		if imageSlice >= SentVars.ListLength {
+			SentVars.Next = false
+			SentVars.ListMem = list[:SentVars.ListLength]
+		} else {
+			SentVars.Next = true
+			SentVars.ListMem = list[:imageSlice+1]
+		}
+		tpl.ExecuteTemplate(w, "search.gohtml", &SentVars)
+		return
+	} else {
+		SentVars.ListLength = totalPics
+		SentVars.Next = false
+		SentVars.Prev = false
+		SentVars.PageNumber = 1
+		SentVars.ListMem = list
+		tpl.ExecuteTemplate(w, "search.gohtml", &SentVars)
+		return
+	}
 
 }
