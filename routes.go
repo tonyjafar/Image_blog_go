@@ -412,3 +412,164 @@ ORDER BY created_at DESC
 	}
 
 }
+
+func addVideo(w http.ResponseWriter, r *http.Request) {
+	if !loggedIn(w, r) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	c, err := r.Cookie("session")
+	if err != nil {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+	c.MaxAge = cAge
+	http.SetCookie(w, c)
+	if r.Method == http.MethodPost {
+		errors := make(map[string]bool)
+		tn := time.Now()
+		l := r.FormValue("location")
+		d := r.FormValue("description")
+		fhs := r.MultipartForm.File["nf"]
+		for _, fhm := range fhs {
+			mf, err := fhm.Open()
+			if err != nil {
+				errors["fileError"] = true
+				tpl.ExecuteTemplate(w, "uplimage.gohtml", errors)
+				return
+			}
+			defer mf.Close()
+			s := fhm.Size
+			ext := strings.Split(fhm.Filename, ".")[1]
+			h := sha1.New()
+			io.Copy(h, mf)
+			n := fmt.Sprintf("%x", h.Sum(nil)) + "." + ext
+			wd, err := os.Getwd()
+			if err != nil {
+				errors["fileError"] = true
+				tpl.ExecuteTemplate(w, "uplimage.gohtml", errors)
+				return
+			}
+			path := filepath.Join(wd, "data/videos", n)
+			nf, err := os.Create(path)
+			if err != nil {
+				errors["fileError"] = true
+				tpl.ExecuteTemplate(w, "uplimage.gohtml", errors)
+				return
+			}
+			defer nf.Close()
+			mf.Seek(0, 0)
+			io.Copy(nf, mf)
+			video := &Video{n, l, s, tn, d}
+			i := SaveV(video)
+			if i != nil {
+				te, err := os.Open(path)
+				if err == nil {
+					defer te.Close()
+					os.Remove(path)
+				}
+				errors["fileError"] = true
+				tpl.ExecuteTemplate(w, "uplimage.gohtml", errors)
+				return
+			}
+		}
+		errors["fileError"] = false
+	}
+	test := &data
+	test.loggedin = true
+	tpl.ExecuteTemplate(w, "uplimage.gohtml", data.loggedin)
+}
+
+func videos(w http.ResponseWriter, r *http.Request) {
+	if !loggedIn(w, r) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	c, err := r.Cookie("session")
+	if err != nil {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	list := []string{}
+	c.MaxAge = cAge
+	http.SetCookie(w, c)
+	test := &data
+	test.loggedin = true
+	rows, err := db.Query(
+		`
+		SELECT name FROM
+image_blog.videos
+ORDER BY created_at DESC
+		`,
+	)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	var name string
+	for rows.Next() {
+		err := rows.Scan(&name)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		list = append(list, name)
+	}
+	if len(list) == 0 {
+		tpl.ExecuteTemplate(w, "videos.gohtml", data.loggedin)
+		return
+	}
+	var SentVars struct {
+		ListLength int
+		PageNumber int
+		Next       bool
+		Prev       bool
+		ListMem    []string
+		ListStart  int
+		ListEnd    int
+	}
+	totalPics := len(list)
+	SentVars.ListLength = totalPics
+	if strings.Contains(r.RequestURI, "page") && (!strings.HasSuffix(r.RequestURI, "page=1")) {
+		r.ParseForm()
+		page := r.FormValue("page")
+		SentVars.PageNumber, _ = strconv.Atoi(page)
+		SentVars.ListStart = ((SentVars.PageNumber - 1) * imageSlice)
+		SentVars.ListEnd = SentVars.ListStart + imageSlice
+		if totalPics <= SentVars.ListEnd {
+			SentVars.ListMem = list[SentVars.ListStart:totalPics]
+			SentVars.Next = false
+		} else {
+			SentVars.ListMem = list[SentVars.ListStart:SentVars.ListEnd]
+			SentVars.Next = true
+		}
+		if SentVars.PageNumber == 1 {
+			SentVars.Prev = false
+		} else {
+			SentVars.Prev = true
+		}
+		tpl.ExecuteTemplate(w, "videos.gohtml", &SentVars)
+		return
+	} else if !strings.Contains(r.RequestURI, "all") {
+		SentVars.Prev = false
+		SentVars.PageNumber = 1
+		if imageSlice >= SentVars.ListLength {
+			SentVars.Next = false
+			SentVars.ListMem = list[:SentVars.ListLength]
+		} else {
+			SentVars.Next = true
+			SentVars.ListMem = list[:imageSlice]
+		}
+		tpl.ExecuteTemplate(w, "videos.gohtml", &SentVars)
+		return
+	} else {
+		SentVars.ListLength = totalPics
+		SentVars.Next = false
+		SentVars.Prev = false
+		SentVars.PageNumber = 1
+		SentVars.ListMem = list
+		tpl.ExecuteTemplate(w, "videos.gohtml", &SentVars)
+		return
+	}
+
+}

@@ -54,8 +54,10 @@ func main() {
 	http.HandleFunc("/", index)
 	http.HandleFunc("/signin", login)
 	http.HandleFunc("/images", images)
+	http.HandleFunc("/videos", videos)
 	http.HandleFunc("/signout", signout)
 	http.HandleFunc("/add_image", addImage)
+	http.HandleFunc("/add_video", addVideo)
 	http.HandleFunc("/search", search)
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }

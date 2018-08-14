@@ -29,6 +29,31 @@ func Save(image *Image) error {
 	return err
 }
 
+type Video struct {
+	Name        string
+	Location    string
+	Size        int64
+	CreatedAt   time.Time
+	Description string
+}
+
+func SaveV(video *Video) error {
+	_, err := db.Exec(
+		`
+		REPLACE INTO image_blog.videos
+		(name, location, description, size, created_at)
+		VALUES
+		(?, ?, ?, ?, ?)
+		`,
+		video.Name,
+		video.Location,
+		video.Description,
+		video.Size,
+		video.CreatedAt,
+	)
+	return err
+}
+
 /*
 func Find(disc string) ([]Image, error) {
 	rows, err := db.Query(

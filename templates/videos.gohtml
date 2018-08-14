@@ -1,0 +1,29 @@
+{{template "header" .}}
+<div class="jumbotron">
+<div class="container">
+<h1>Your Videos</h1>
+</div>
+</div>
+<div class="container">
+<h3>{{.ListLength}} Videos</h3>
+<a class="btn btn-info" href="/videos?all">View All Images</a>
+<div class="row justify-content-center">
+<div class="col-md-8">
+<div class="row">
+{{range .ListMem}}
+<video class="col-sm-4" width="400" height="400" controls>
+<source src="/assets/videos/{{.}}" type="video/mp4">
+</video>
+{{end}}
+</div>
+<br><br>
+{{if .Prev}}
+<a class="btn btn-info pull-left" href="/videos?page={{red .PageNumber}}">Previous Page</a>
+{{end}}
+{{if .Next}}
+<a class="btn btn-info pull-right" href="/videos?page={{add .PageNumber}}">Next Page</a>
+{{end}}
+</div>
+</div>
+</div>
+{{template "footer"}}
