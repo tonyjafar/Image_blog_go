@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 
@@ -144,59 +143,10 @@ ORDER BY created_at DESC
 		tpl.ExecuteTemplate(w, "images.gohtml", data.loggedin)
 		return
 	}
-	var SentVars struct {
-		ListLength int
-		PageNumber int
-		Next       bool
-		Prev       bool
-		ListMem    []string
-		ListStart  int
-		ListEnd    int
-	}
-	totalPics := len(list)
-	SentVars.ListLength = totalPics
-	if strings.Contains(r.RequestURI, "page") && (!strings.HasSuffix(r.RequestURI, "page=1")) {
-		r.ParseForm()
-		page := r.FormValue("page")
-		SentVars.PageNumber, _ = strconv.Atoi(page)
-		SentVars.ListStart = ((SentVars.PageNumber - 1) * imageSlice)
-		SentVars.ListEnd = SentVars.ListStart + imageSlice
-		if totalPics <= SentVars.ListEnd {
-			SentVars.ListMem = list[SentVars.ListStart:totalPics]
-			SentVars.Next = false
-		} else {
-			SentVars.ListMem = list[SentVars.ListStart:SentVars.ListEnd]
-			SentVars.Next = true
-		}
-		if SentVars.PageNumber == 1 {
-			SentVars.Prev = false
-		} else {
-			SentVars.Prev = true
-		}
-		tpl.ExecuteTemplate(w, "images.gohtml", &SentVars)
-		return
-	} else if !strings.Contains(r.RequestURI, "all") {
-		SentVars.Prev = false
-		SentVars.PageNumber = 1
-		if imageSlice >= SentVars.ListLength {
-			SentVars.Next = false
-			SentVars.ListMem = list[:SentVars.ListLength]
-		} else {
-			SentVars.Next = true
-			SentVars.ListMem = list[:imageSlice]
-		}
-		tpl.ExecuteTemplate(w, "images.gohtml", &SentVars)
-		return
-	} else {
-		SentVars.ListLength = totalPics
-		SentVars.Next = false
-		SentVars.Prev = false
-		SentVars.PageNumber = 1
-		SentVars.ListMem = list
-		tpl.ExecuteTemplate(w, "images.gohtml", &SentVars)
-		return
-	}
 
+	var myVar SentVars
+	pageIt(w, &myVar, r, list)
+	tpl.ExecuteTemplate(w, "images.gohtml", &myVar)
 }
 
 func signout(w http.ResponseWriter, r *http.Request) {
@@ -356,60 +306,10 @@ ORDER BY created_at DESC
 		tpl.ExecuteTemplate(w, "search.gohtml", data.loggedin)
 		return
 	}
-	var SentVars struct {
-		ListLength int
-		PageNumber int
-		Next       bool
-		Prev       bool
-		ListMem    []string
-		ListStart  int
-		ListEnd    int
-		Search     string
-	}
-	totalPics := len(list)
-	SentVars.ListLength = totalPics
-	r.ParseForm()
-	page := r.FormValue("page")
-	SentVars.Search = r.FormValue("search")
-	if strings.Contains(r.RequestURI, "page") && (!strings.HasSuffix(r.RequestURI, "page=1")) {
-		SentVars.PageNumber, _ = strconv.Atoi(page)
-		SentVars.ListStart = ((SentVars.PageNumber - 1) * imageSlice)
-		SentVars.ListEnd = SentVars.ListStart + imageSlice
-		if totalPics <= SentVars.ListEnd {
-			SentVars.ListMem = list[SentVars.ListStart:totalPics]
-			SentVars.Next = false
-		} else {
-			SentVars.ListMem = list[SentVars.ListStart:SentVars.ListEnd]
-			SentVars.Next = true
-		}
-		if SentVars.PageNumber == 1 {
-			SentVars.Prev = false
-		} else {
-			SentVars.Prev = true
-		}
-		tpl.ExecuteTemplate(w, "search.gohtml", &SentVars)
-		return
-	} else if !strings.Contains(r.RequestURI, "all") {
-		SentVars.Prev = false
-		SentVars.PageNumber = 1
-		if imageSlice >= SentVars.ListLength {
-			SentVars.Next = false
-			SentVars.ListMem = list[:SentVars.ListLength]
-		} else {
-			SentVars.Next = true
-			SentVars.ListMem = list[:imageSlice]
-		}
-		tpl.ExecuteTemplate(w, "search.gohtml", &SentVars)
-		return
-	} else {
-		SentVars.ListLength = totalPics
-		SentVars.Next = false
-		SentVars.Prev = false
-		SentVars.PageNumber = 1
-		SentVars.ListMem = list
-		tpl.ExecuteTemplate(w, "search.gohtml", &SentVars)
-		return
-	}
+	var myVar SentVars
+	pageIt(w, &myVar, r, list)
+	tpl.ExecuteTemplate(w, "search.gohtml", &myVar)
+	return
 
 }
 
@@ -519,57 +419,8 @@ ORDER BY created_at DESC
 		tpl.ExecuteTemplate(w, "videos.gohtml", data.loggedin)
 		return
 	}
-	var SentVars struct {
-		ListLength int
-		PageNumber int
-		Next       bool
-		Prev       bool
-		ListMem    []string
-		ListStart  int
-		ListEnd    int
-	}
-	totalPics := len(list)
-	SentVars.ListLength = totalPics
-	if strings.Contains(r.RequestURI, "page") && (!strings.HasSuffix(r.RequestURI, "page=1")) {
-		r.ParseForm()
-		page := r.FormValue("page")
-		SentVars.PageNumber, _ = strconv.Atoi(page)
-		SentVars.ListStart = ((SentVars.PageNumber - 1) * imageSlice)
-		SentVars.ListEnd = SentVars.ListStart + imageSlice
-		if totalPics <= SentVars.ListEnd {
-			SentVars.ListMem = list[SentVars.ListStart:totalPics]
-			SentVars.Next = false
-		} else {
-			SentVars.ListMem = list[SentVars.ListStart:SentVars.ListEnd]
-			SentVars.Next = true
-		}
-		if SentVars.PageNumber == 1 {
-			SentVars.Prev = false
-		} else {
-			SentVars.Prev = true
-		}
-		tpl.ExecuteTemplate(w, "videos.gohtml", &SentVars)
-		return
-	} else if !strings.Contains(r.RequestURI, "all") {
-		SentVars.Prev = false
-		SentVars.PageNumber = 1
-		if imageSlice >= SentVars.ListLength {
-			SentVars.Next = false
-			SentVars.ListMem = list[:SentVars.ListLength]
-		} else {
-			SentVars.Next = true
-			SentVars.ListMem = list[:imageSlice]
-		}
-		tpl.ExecuteTemplate(w, "videos.gohtml", &SentVars)
-		return
-	} else {
-		SentVars.ListLength = totalPics
-		SentVars.Next = false
-		SentVars.Prev = false
-		SentVars.PageNumber = 1
-		SentVars.ListMem = list
-		tpl.ExecuteTemplate(w, "videos.gohtml", &SentVars)
-		return
-	}
+	var myVar SentVars
+	pageIt(w, &myVar, r, list)
+	tpl.ExecuteTemplate(w, "videos.gohtml", &myVar)
 
 }
