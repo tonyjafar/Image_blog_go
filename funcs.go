@@ -77,7 +77,7 @@ func pageIt(w http.ResponseWriter, s *SentVars, r *http.Request, l []string) Sen
 			}
 			return *s
 		}
-		http.Redirect(w, r, "/images", http.StatusSeeOther)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 
 	} else if !strings.Contains(r.RequestURI, "all") {
 		s.Prev = false
