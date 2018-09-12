@@ -59,7 +59,15 @@ func pageIt(w http.ResponseWriter, s *SentVars, r *http.Request, l []string) Sen
 	page := r.FormValue("page")
 	s.Search = r.FormValue("search")
 	if strings.Contains(r.RequestURI, "page") && (!strings.HasSuffix(r.RequestURI, "page=1")) {
-		s.PageNumber, _ = strconv.Atoi(page)
+		s.PageNumber, err = strconv.Atoi(page)
+		if err != nil {
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+			return *s
+		}
+		if s.PageNumber < 0 {
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+			return *s
+		}
 		s.ListStart = ((s.PageNumber - 1) * imageSlice)
 		s.ListEnd = s.ListStart + imageSlice
 		if !(t <= s.ListStart) {
@@ -78,6 +86,7 @@ func pageIt(w http.ResponseWriter, s *SentVars, r *http.Request, l []string) Sen
 			return *s
 		}
 		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return *s
 
 	} else if !strings.Contains(r.RequestURI, "all") {
 		s.Prev = false
@@ -99,5 +108,4 @@ func pageIt(w http.ResponseWriter, s *SentVars, r *http.Request, l []string) Sen
 		s.ListMem = l
 		return *s
 	}
-	return *s
 }
