@@ -52,7 +52,7 @@ type SentVars struct {
 	Search     string
 }
 
-func pageIt(w http.ResponseWriter, s *SentVars, r *http.Request, l []string) SentVars {
+func pageIt(w http.ResponseWriter, s *SentVars, r *http.Request, l []string) {
 	t := len(l)
 	s.ListLength = t
 	r.ParseForm()
@@ -62,11 +62,11 @@ func pageIt(w http.ResponseWriter, s *SentVars, r *http.Request, l []string) Sen
 		s.PageNumber, err = strconv.Atoi(page)
 		if err != nil {
 			http.Redirect(w, r, "/", http.StatusSeeOther)
-			return *s
+			return
 		}
 		if s.PageNumber < 0 {
 			http.Redirect(w, r, "/", http.StatusSeeOther)
-			return *s
+			return
 		}
 		s.ListStart = ((s.PageNumber - 1) * imageSlice)
 		s.ListEnd = s.ListStart + imageSlice
@@ -83,10 +83,10 @@ func pageIt(w http.ResponseWriter, s *SentVars, r *http.Request, l []string) Sen
 			} else {
 				s.Prev = true
 			}
-			return *s
+			return
 		}
 		http.Redirect(w, r, "/", http.StatusSeeOther)
-		return *s
+		return
 
 	} else if !strings.Contains(r.RequestURI, "all") {
 		s.Prev = false
@@ -99,13 +99,13 @@ func pageIt(w http.ResponseWriter, s *SentVars, r *http.Request, l []string) Sen
 			s.ListMem = l[:imageSlice]
 		}
 
-		return *s
+		return
 	} else {
 		s.ListLength = t
 		s.Next = false
 		s.Prev = false
 		s.PageNumber = 1
 		s.ListMem = l
-		return *s
+		return
 	}
 }
