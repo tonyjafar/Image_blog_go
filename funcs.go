@@ -52,7 +52,14 @@ type SentVars struct {
 	Search     string
 }
 
-func pageIt(w http.ResponseWriter, s *SentVars, r *http.Request, l []string) {
+var imageSlice = 30
+
+func pageIt(w http.ResponseWriter, s *SentVars, r *http.Request, l []string, v bool) {
+	if v {
+		imageSlice = 6
+	} else {
+		imageSlice = 30
+	}
 	t := len(l)
 	s.ListLength = t
 	r.ParseForm()

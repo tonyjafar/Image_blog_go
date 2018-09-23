@@ -145,7 +145,7 @@ ORDER BY created_at DESC
 	}
 
 	var myVar SentVars
-	pageIt(w, &myVar, r, list)
+	pageIt(w, &myVar, r, list, false)
 	tpl.ExecuteTemplate(w, "images.gohtml", &myVar)
 }
 
@@ -307,7 +307,7 @@ ORDER BY created_at DESC
 		return
 	}
 	var myVar SentVars
-	pageIt(w, &myVar, r, list)
+	pageIt(w, &myVar, r, list, false)
 	tpl.ExecuteTemplate(w, "search.gohtml", &myVar)
 	return
 
@@ -420,7 +420,7 @@ ORDER BY created_at DESC
 		return
 	}
 	var myVar SentVars
-	pageIt(w, &myVar, r, list)
+	pageIt(w, &myVar, r, list, true)
 	tpl.ExecuteTemplate(w, "videos.gohtml", &myVar)
 
 }

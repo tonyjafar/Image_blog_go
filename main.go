@@ -12,7 +12,6 @@ import (
 const (
 	cAge           int = 86400 * 3 // stay logged in for 3 days
 	widthThumbnail int = 400
-	imageSlice     int = 30
 )
 
 var tpl *template.Template
