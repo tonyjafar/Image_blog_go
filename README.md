@@ -34,7 +34,7 @@ func GenerateFromPassword(password []byte, cost int) ([]byte, error) {
 ```
 converting it to string
 
-## Images Table
+## Images and Videos Tables
 name, location, description, size, created_at
 
 ## conf.json
