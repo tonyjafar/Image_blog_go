@@ -2,7 +2,7 @@
 <div class="container">
   <div class="jumbotron">
     <h1>Tony Image Blog</h1>
-    {{if .}}
+    {{if .Loggedin}}
     <h2><a href="/add_image">Add some new images</a> OR <a href="/add_video">Add some new Videos</a></h2>
     {{else}}
     <h2><a href="/signin">Login to see and add images</a></h2>
@@ -10,16 +10,18 @@
   </div>
 </div>
 <div class="container">
-{{if .}}
-<h3>Recently added images</h3>
-{{end}}
-<div class="row justify-content-center">
 <div class="col-md-8">
 <div class="row">
-{{range .}}
+{{if .Loggedin}}
+<div class="container">
+<h3>Recently added images</h3>
+<br>
+<br>
+</div>
+{{range .List}}
 <a href="/assets/{{.}}"  data-toggle="lightbox" data-gallery="example-gallery" class="col-sm-4"><img src="/assets/thumb/{{.}}" class="img-fluid img-thumbnail"></a>
 {{end}}
-</div>
+{{end}}
 </div>
 </div>
 </div>

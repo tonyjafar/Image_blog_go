@@ -24,14 +24,19 @@
 	</div>
 </div>
 
-{{range $i := .}}
-	{{if .}}
+	{{if .ErrorFile.IsError}}
 	<br>
 <br>
 	<div class="alert alert-danger">
-  <strong>Error!</strong> Somethin bad happened please try again.
+  <strong>Error!:</strong> {{.ErrorFile.ErrorType}}.
 </div>
 	{{end}}
+{{if .ErrorFile.IsSucc}}
+<br>
+<br>
+	<div class="alert alert-success">
+  <strong>Hooray!:</strong> Your files are uploaded.
+</div>
 	{{end}}
 	</div>
 </div>

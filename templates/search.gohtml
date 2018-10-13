@@ -13,22 +13,25 @@
 </div>
 </div>
 <div class="container">
-<a class="btn btn-info" href="/search?search={{.Search}}&all">View All Images</a>
-<div class="row justify-content-center">
+<a class="btn btn-info" href="/search?search={{.MyVar.Search}}&all">View All Images</a>
+<br><br>
 <div class="col-md-8">
 <div class="row">
-{{range .ListMem}}
+{{range .MyVar.ListMem}}
 <a href="/assets/{{.}}"  data-toggle="lightbox" data-gallery="example-gallery" class="col-sm-4"><img src="/assets/thumb/{{.}}" class="img-fluid img-thumbnail"></a>
 {{end}}
 </div>
-<br><br>
-{{if .Prev}}
-<a class="btn btn-info pull-left" href="/search?search={{.Search}}&page={{red .PageNumber}}">Previous Page</a>
-{{end}}
-{{if .Next}}
-<a class="btn btn-info pull-right" href="/search?search={{.Search}}&page={{add .PageNumber}}">Next Page</a>
-{{end}}
 </div>
+</div>
+<br><br>
+<div class="container">
+<div class="col-md-8">
+{{if .MyVar.Prev}}
+<a class="btn btn-info float-left" href="/search?search={{.MyVar.Search}}&page={{red .MyVar.PageNumber}}">Previous Page</a>
+{{end}}
+{{if .MyVar.Next}}
+<a class="btn btn-info float-right" href="/search?search={{.MyVar.Search}}&page={{add .MyVar.PageNumber}}">Next Page</a>
+{{end}}
 </div>
 </div>
 <script>
@@ -37,13 +40,13 @@ $(document).on('click', '[data-toggle="lightbox"]', function(event) {
                 $(this).ekkoLightbox();
             });
 </script>
-<br>
+<br><br><br>
 <div class="container">
-{{ if not . }}
-    <h4>Sorry. No matching results found</h4>
-{{else}}
-<h4>{{.ListLength}} matching results found</h4>
-{{ end }}
+<div class="col-md-8">
+{{if gt .MyVar.ListLength 0}}
+<h4>{{.MyVar.ListLength}} matching results found</h4>
+{{end}}
+</div>
 </div>
 <br>
 {{template "footer"}}
