@@ -330,7 +330,7 @@ func addVideo(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				SentData.ErrorFile.IsError = true
 				SentData.ErrorFile.ErrorType = err.Error()
-				tpl.ExecuteTemplate(w, "uplimage.gohtml", SentData)
+				tpl.ExecuteTemplate(w, "uploadvideo.gohtml", SentData)
 				return
 			}
 			defer mf.Close()
@@ -343,7 +343,7 @@ func addVideo(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				SentData.ErrorFile.IsError = true
 				SentData.ErrorFile.ErrorType = err.Error()
-				tpl.ExecuteTemplate(w, "uplimage.gohtml", SentData)
+				tpl.ExecuteTemplate(w, "uploadvideo.gohtml", SentData)
 				return
 			}
 			path := filepath.Join(wd, "data/videos", n)
@@ -351,7 +351,7 @@ func addVideo(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				SentData.ErrorFile.IsError = true
 				SentData.ErrorFile.ErrorType = err.Error()
-				tpl.ExecuteTemplate(w, "uplimage.gohtml", SentData)
+				tpl.ExecuteTemplate(w, "uploadvideo.gohtml", SentData)
 				return
 			}
 			defer nf.Close()
@@ -367,7 +367,7 @@ func addVideo(w http.ResponseWriter, r *http.Request) {
 				}
 				SentData.ErrorFile.IsError = true
 				SentData.ErrorFile.ErrorType = err.Error()
-				tpl.ExecuteTemplate(w, "uplimage.gohtml", SentData)
+				tpl.ExecuteTemplate(w, "uploadvideo.gohtml", SentData)
 				return
 			}
 		}
@@ -375,7 +375,7 @@ func addVideo(w http.ResponseWriter, r *http.Request) {
 		SentData.ErrorFile.IsSucc = true
 	}
 	SentData.Loggedin = true
-	tpl.ExecuteTemplate(w, "uplimage.gohtml", SentData)
+	tpl.ExecuteTemplate(w, "uploadvideo.gohtml", SentData)
 }
 
 func videos(w http.ResponseWriter, r *http.Request) {
