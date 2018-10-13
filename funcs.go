@@ -20,8 +20,16 @@ var parms struct {
 }
 
 func loggedIn(w http.ResponseWriter, r *http.Request) bool {
-	_, err := r.Cookie("session")
+	c, err := r.Cookie("session")
 	if err != nil {
+		return false
+	}
+	var session string
+	dbSession := db.QueryRow("select session from image_blog.Users where username = ?", dbUser).Scan(&session)
+	if dbSession != nil {
+		return false
+	}
+	if c.Value != session {
 		return false
 	}
 	return true
@@ -115,4 +123,14 @@ func pageIt(w http.ResponseWriter, s *SentVars, r *http.Request, l []string, v b
 		s.ListMem = l
 		return
 	}
+}
+
+func updateUserSession(s string) error {
+	_, err := db.Exec(
+		`
+		update image_blog.Users set session = (?)
+		`,
+		s,
+	)
+	return err
 }

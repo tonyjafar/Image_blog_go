@@ -71,12 +71,10 @@ func login(w http.ResponseWriter, r *http.Request) {
 		row1 := db.QueryRow("select username from image_blog.Users where username=?", un).Scan(&name)
 		if row1 != nil {
 			SentData.UserError = true
-			fmt.Println(row1)
 		}
 		row2 := db.QueryRow("select password from image_blog.Users where username=?", un).Scan(&pass)
 		if row2 != nil {
 			SentData.UserError = true
-			fmt.Println(row2)
 		}
 		bp := []byte(p)
 		st2 := []byte(pass)
@@ -89,6 +87,14 @@ func login(w http.ResponseWriter, r *http.Request) {
 				MaxAge: cAge,
 			}
 			http.SetCookie(w, c)
+			dbUser = un
+			err := updateUserSession(s.String())
+			if err != nil {
+				SentData.UserError = true
+				fmt.Println(err.Error())
+				tpl.ExecuteTemplate(w, "signin.gohtml", SentData)
+				return
+			}
 			http.Redirect(w, r, "/images", http.StatusSeeOther)
 			return
 		} else {
@@ -154,6 +160,12 @@ func signout(w http.ResponseWriter, r *http.Request) {
 	c.MaxAge = -1
 	http.SetCookie(w, c)
 	SentData.Loggedin = false
+	db.Exec(
+		`
+		update image_blog.Users SET session = null WHERE username = ?
+		`,
+		dbUser,
+	)
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 	return
 }
