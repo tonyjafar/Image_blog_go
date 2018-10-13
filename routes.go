@@ -55,6 +55,7 @@ LIMIT 6
 
 func login(w http.ResponseWriter, r *http.Request) {
 	SentData := &Data
+	SentData.UserError = false
 	if loggedIn(w, r) {
 		http.Redirect(w, r, "/images", http.StatusSeeOther)
 		return
