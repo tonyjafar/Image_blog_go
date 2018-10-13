@@ -91,7 +91,6 @@ func login(w http.ResponseWriter, r *http.Request) {
 			err := updateUserSession(s.String())
 			if err != nil {
 				SentData.UserError = true
-				fmt.Println(err.Error())
 				tpl.ExecuteTemplate(w, "signin.gohtml", SentData)
 				return
 			}
