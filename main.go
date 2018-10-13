@@ -18,10 +18,19 @@ var tpl *template.Template
 var db *sql.DB
 var err error
 
-var data struct {
-	loggedin  bool
-	nofile    bool
-	fileerror bool
+var Data struct {
+	Loggedin  bool
+	Nofile    bool
+	ErrorFile FileError
+	UserError bool
+	List      []string
+	MyVar     SentVars
+}
+
+type FileError struct {
+	IsError   bool
+	ErrorType string
+	IsSucc    bool
 }
 
 var num = template.FuncMap{
@@ -49,6 +58,7 @@ func init() {
 func main() {
 	defer db.Close()
 	http.HandleFunc("/assets/", handleFileServer("./data", "/assets"))
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 	http.Handle("/favicon.ico", http.NotFoundHandler())
 	http.HandleFunc("/", index)
 	http.HandleFunc("/signin", login)

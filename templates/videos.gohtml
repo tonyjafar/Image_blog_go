@@ -5,25 +5,26 @@
 </div>
 </div>
 <div class="container">
-<h3>{{.ListLength}} Videos</h3>
+<h3>{{.MyVar.ListLength}} Videos</h3>
 <a class="btn btn-info" href="/videos?all">View All Videos</a>
-<div class="row justify-content-center">
+<br>
+<br>
 <div class="col-md-8">
 <div class="row">
-{{range .ListMem}}
+{{range .MyVar.ListMem}}
 <video class="col-sm-4" width="400" height="400" controls>
 <source src="/assets/videos/{{.}}" type="video/mp4">
 </video>
 {{end}}
 </div>
 <br><br>
-{{if .Prev}}
-<a class="btn btn-info pull-left" href="/videos?page={{red .PageNumber}}">Previous Page</a>
+{{if .MyVar.Prev}}
+<a class="btn btn-info float-left" href="/videos?page={{red .MyVar.PageNumber}}">Previous Page</a>
 {{end}}
-{{if .Next}}
-<a class="btn btn-info pull-right" href="/videos?page={{add .PageNumber}}">Next Page</a>
+{{if .MyVar.Next}}
+<a class="btn btn-info float-right" href="/videos?page={{add .MyVar.PageNumber}}">Next Page</a>
 {{end}}
 </div>
 </div>
-</div>
+<br><br>
 {{template "footer"}}

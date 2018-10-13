@@ -16,15 +16,15 @@ import (
 )
 
 func index(w http.ResponseWriter, r *http.Request) {
+	SentData := &Data
 	c, err := r.Cookie("session")
-	list := []string{}
+	List := []string{}
 	if err == nil {
 		c.MaxAge = cAge
 		http.SetCookie(w, c)
 	}
 	if loggedIn(w, r) {
-		test := &data
-		test.loggedin = true
+		SentData.Loggedin = true
 		rows, err := db.Query(
 			`
 			SELECT name FROM
@@ -44,28 +44,23 @@ LIMIT 6
 				fmt.Println(err)
 				return
 			}
-			list = append(list, name)
+			List = append(List, name)
 		}
+		SentData.List = List
 	} else {
-		test := &data
-		test.loggedin = false
+		SentData.Loggedin = false
 	}
-	if len(list) == 0 {
-		tpl.ExecuteTemplate(w, "index.gohtml", data.loggedin)
-		return
-	}
-	tpl.ExecuteTemplate(w, "index.gohtml", list)
+	tpl.ExecuteTemplate(w, "index.gohtml", SentData)
 }
 
 func login(w http.ResponseWriter, r *http.Request) {
-
+	SentData := &Data
 	if loggedIn(w, r) {
 		http.Redirect(w, r, "/images", http.StatusSeeOther)
 		return
 	}
-
-	var userData struct {
-		userPassErr bool
+	if strings.HasSuffix(r.RequestURI, ".css") {
+		w.Header().Set("Content-Type", "text/css; charset=utf-8")
 	}
 	if r.Method == http.MethodPost {
 		un := r.FormValue("username")
@@ -74,12 +69,12 @@ func login(w http.ResponseWriter, r *http.Request) {
 		var pass string
 		row1 := db.QueryRow("select username from image_blog.Users where username=?", un).Scan(&name)
 		if row1 != nil {
-			userData.userPassErr = true
+			SentData.UserError = true
 			fmt.Println(row1)
 		}
 		row2 := db.QueryRow("select password from image_blog.Users where username=?", un).Scan(&pass)
 		if row2 != nil {
-			userData.userPassErr = true
+			SentData.UserError = true
 			fmt.Println(row2)
 		}
 		bp := []byte(p)
@@ -96,15 +91,16 @@ func login(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/images", http.StatusSeeOther)
 			return
 		} else {
-			userData.userPassErr = true
-			tpl.ExecuteTemplate(w, "signin.gohtml", userData)
+			SentData.UserError = true
+			tpl.ExecuteTemplate(w, "signin.gohtml", SentData)
 			return
 		}
 	}
-	tpl.ExecuteTemplate(w, "signin.gohtml", nil)
+	tpl.ExecuteTemplate(w, "signin.gohtml", SentData)
 }
 
 func images(w http.ResponseWriter, r *http.Request) {
+	SentData := &Data
 	if !loggedIn(w, r) {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
 		return
@@ -114,11 +110,10 @@ func images(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
 		return
 	}
-	list := []string{}
+	List := []string{}
 	c.MaxAge = cAge
 	http.SetCookie(w, c)
-	test := &data
-	test.loggedin = true
+	SentData.Loggedin = true
 	rows, err := db.Query(
 		`
 		SELECT name FROM
@@ -137,19 +132,15 @@ ORDER BY created_at DESC
 			fmt.Println(err)
 			return
 		}
-		list = append(list, name)
+		List = append(List, name)
 	}
-	if len(list) == 0 {
-		tpl.ExecuteTemplate(w, "images.gohtml", data.loggedin)
-		return
-	}
-
-	var myVar SentVars
-	pageIt(w, &myVar, r, list, false)
-	tpl.ExecuteTemplate(w, "images.gohtml", &myVar)
+	SentData.List = List
+	pageIt(w, &SentData.MyVar, r, List, false)
+	tpl.ExecuteTemplate(w, "images.gohtml", SentData)
 }
 
 func signout(w http.ResponseWriter, r *http.Request) {
+	SentData := &Data
 	if !loggedIn(w, r) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
@@ -161,13 +152,14 @@ func signout(w http.ResponseWriter, r *http.Request) {
 	}
 	c.MaxAge = -1
 	http.SetCookie(w, c)
-	test := &data
-	test.loggedin = false
+	SentData.Loggedin = false
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 	return
 }
 
 func addImage(w http.ResponseWriter, r *http.Request) {
+	SentData := &Data
+	SentData.ErrorFile = FileError{}
 	if !loggedIn(w, r) {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
 		return
@@ -180,7 +172,6 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 	c.MaxAge = cAge
 	http.SetCookie(w, c)
 	if r.Method == http.MethodPost {
-		errors := make(map[string]bool)
 		tn := time.Now()
 		l := r.FormValue("location")
 		d := r.FormValue("description")
@@ -188,8 +179,9 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 		for _, fhm := range fhs {
 			mf, err := fhm.Open()
 			if err != nil {
-				errors["fileError"] = true
-				tpl.ExecuteTemplate(w, "uplimage.gohtml", errors)
+				SentData.ErrorFile.IsError = true
+				SentData.ErrorFile.ErrorType = err.Error()
+				tpl.ExecuteTemplate(w, "uplimage.gohtml", SentData)
 				return
 			}
 			defer mf.Close()
@@ -200,15 +192,17 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 			n := fmt.Sprintf("%x", h.Sum(nil)) + "." + ext
 			wd, err := os.Getwd()
 			if err != nil {
-				errors["fileError"] = true
-				tpl.ExecuteTemplate(w, "uplimage.gohtml", errors)
+				SentData.ErrorFile.IsError = true
+				SentData.ErrorFile.ErrorType = err.Error()
+				tpl.ExecuteTemplate(w, "uplimage.gohtml", SentData)
 				return
 			}
 			path := filepath.Join(wd, "data", n)
 			nf, err := os.Create(path)
 			if err != nil {
-				errors["fileError"] = true
-				tpl.ExecuteTemplate(w, "uplimage.gohtml", errors)
+				SentData.ErrorFile.IsError = true
+				SentData.ErrorFile.ErrorType = "Create Path"
+				tpl.ExecuteTemplate(w, "uplimage.gohtml", SentData)
 				return
 			}
 			defer nf.Close()
@@ -218,8 +212,9 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 			i := Save(image)
 			scrImage, err := imaging.Open("./data/" + image.Name)
 			if err != nil {
-				errors["fileError"] = true
-				tpl.ExecuteTemplate(w, "uplimage.gohtml", errors)
+				SentData.ErrorFile.IsError = true
+				SentData.ErrorFile.ErrorType = err.Error()
+				tpl.ExecuteTemplate(w, "uplimage.gohtml", SentData)
 				return
 			}
 			dstImage := imaging.Thumbnail(scrImage, widthThumbnail, widthThumbnail, imaging.Lanczos)
@@ -231,16 +226,17 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 					defer te.Close()
 					os.Remove(path)
 				}
-				errors["fileError"] = true
-				tpl.ExecuteTemplate(w, "uplimage.gohtml", errors)
+				SentData.ErrorFile.IsError = true
+				SentData.ErrorFile.ErrorType = err.Error()
+				tpl.ExecuteTemplate(w, "uplimage.gohtml", SentData)
 				return
 			}
 		}
-		errors["fileError"] = false
+		SentData.ErrorFile.IsError = false
+		SentData.ErrorFile.IsSucc = true
 	}
-	test := &data
-	test.loggedin = true
-	tpl.ExecuteTemplate(w, "uplimage.gohtml", data.loggedin)
+	SentData.Loggedin = true
+	tpl.ExecuteTemplate(w, "uplimage.gohtml", SentData)
 }
 
 func handleFileServer(dir, prefix string) http.HandlerFunc {
@@ -258,6 +254,8 @@ func handleFileServer(dir, prefix string) http.HandlerFunc {
 }
 
 func search(w http.ResponseWriter, r *http.Request) {
+	SentData := &Data
+	SentData.List = []string{}
 	if !loggedIn(w, r) {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
 		return
@@ -268,14 +266,12 @@ func search(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	c.MaxAge = cAge
-	list := []string{}
-	test := &data
-	test.loggedin = true
-	//SELECT * FROM items WHERE items.xml LIKE '%123456%'
+	List := []string{}
+	SentData.Loggedin = true
 	if r.Method == http.MethodPost || strings.Contains(r.RequestURI, "page") || strings.Contains(r.RequestURI, "all") {
 		s := r.FormValue("search")
 		if s == "" {
-			tpl.ExecuteTemplate(w, "search.gohtml", data.loggedin)
+			tpl.ExecuteTemplate(w, "search.gohtml", SentData)
 			return
 		}
 		newQuery := "%" + s + "%"
@@ -299,21 +295,19 @@ ORDER BY created_at DESC
 				fmt.Println(err)
 				return
 			}
-			list = append(list, name)
+			List = append(List, name)
 		}
+		SentData.List = List
 	}
-	if len(list) == 0 {
-		tpl.ExecuteTemplate(w, "search.gohtml", data.loggedin)
-		return
-	}
-	var myVar SentVars
-	pageIt(w, &myVar, r, list, false)
-	tpl.ExecuteTemplate(w, "search.gohtml", &myVar)
+	pageIt(w, &SentData.MyVar, r, SentData.List, false)
+	tpl.ExecuteTemplate(w, "search.gohtml", &SentData)
 	return
 
 }
 
 func addVideo(w http.ResponseWriter, r *http.Request) {
+	SentData := &Data
+	SentData.ErrorFile = FileError{}
 	if !loggedIn(w, r) {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
 		return
@@ -326,7 +320,6 @@ func addVideo(w http.ResponseWriter, r *http.Request) {
 	c.MaxAge = cAge
 	http.SetCookie(w, c)
 	if r.Method == http.MethodPost {
-		errors := make(map[string]bool)
 		tn := time.Now()
 		l := r.FormValue("location")
 		d := r.FormValue("description")
@@ -334,8 +327,9 @@ func addVideo(w http.ResponseWriter, r *http.Request) {
 		for _, fhm := range fhs {
 			mf, err := fhm.Open()
 			if err != nil {
-				errors["fileError"] = true
-				tpl.ExecuteTemplate(w, "uplimage.gohtml", errors)
+				SentData.ErrorFile.IsError = true
+				SentData.ErrorFile.ErrorType = err.Error()
+				tpl.ExecuteTemplate(w, "uplimage.gohtml", SentData)
 				return
 			}
 			defer mf.Close()
@@ -346,15 +340,17 @@ func addVideo(w http.ResponseWriter, r *http.Request) {
 			n := fmt.Sprintf("%x", h.Sum(nil)) + "." + ext
 			wd, err := os.Getwd()
 			if err != nil {
-				errors["fileError"] = true
-				tpl.ExecuteTemplate(w, "uplimage.gohtml", errors)
+				SentData.ErrorFile.IsError = true
+				SentData.ErrorFile.ErrorType = err.Error()
+				tpl.ExecuteTemplate(w, "uplimage.gohtml", SentData)
 				return
 			}
 			path := filepath.Join(wd, "data/videos", n)
 			nf, err := os.Create(path)
 			if err != nil {
-				errors["fileError"] = true
-				tpl.ExecuteTemplate(w, "uplimage.gohtml", errors)
+				SentData.ErrorFile.IsError = true
+				SentData.ErrorFile.ErrorType = err.Error()
+				tpl.ExecuteTemplate(w, "uplimage.gohtml", SentData)
 				return
 			}
 			defer nf.Close()
@@ -368,19 +364,21 @@ func addVideo(w http.ResponseWriter, r *http.Request) {
 					defer te.Close()
 					os.Remove(path)
 				}
-				errors["fileError"] = true
-				tpl.ExecuteTemplate(w, "uplimage.gohtml", errors)
+				SentData.ErrorFile.IsError = true
+				SentData.ErrorFile.ErrorType = err.Error()
+				tpl.ExecuteTemplate(w, "uplimage.gohtml", SentData)
 				return
 			}
 		}
-		errors["fileError"] = false
+		SentData.ErrorFile.IsError = false
+		SentData.ErrorFile.IsSucc = true
 	}
-	test := &data
-	test.loggedin = true
-	tpl.ExecuteTemplate(w, "uplimage.gohtml", data.loggedin)
+	SentData.Loggedin = true
+	tpl.ExecuteTemplate(w, "uplimage.gohtml", SentData)
 }
 
 func videos(w http.ResponseWriter, r *http.Request) {
+	SentData := &Data
 	if !loggedIn(w, r) {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
 		return
@@ -390,11 +388,10 @@ func videos(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
 		return
 	}
-	list := []string{}
+	List := []string{}
 	c.MaxAge = cAge
 	http.SetCookie(w, c)
-	test := &data
-	test.loggedin = true
+	SentData.Loggedin = true
 	rows, err := db.Query(
 		`
 		SELECT name FROM
@@ -413,14 +410,10 @@ ORDER BY created_at DESC
 			fmt.Println(err)
 			return
 		}
-		list = append(list, name)
+		List = append(List, name)
 	}
-	if len(list) == 0 {
-		tpl.ExecuteTemplate(w, "videos.gohtml", data.loggedin)
-		return
-	}
-	var myVar SentVars
-	pageIt(w, &myVar, r, list, true)
-	tpl.ExecuteTemplate(w, "videos.gohtml", &myVar)
+	SentData.List = List
+	pageIt(w, &SentData.MyVar, r, List, true)
+	tpl.ExecuteTemplate(w, "videos.gohtml", SentData)
 
 }

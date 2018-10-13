@@ -5,25 +5,31 @@
 </div>
 </div>
 <div class="container">
-<h3>{{.ListLength}} Images</h3>
+<h3>{{.MyVar.ListLength}} Images</h3>
 <a class="btn btn-info" href="/images?all">View All Images</a>
-<div class="row justify-content-center">
+<br>
+<br>
 <div class="col-md-8">
 <div class="row">
-{{range .ListMem}}
-<a href="/assets/{{.}}"  data-toggle="lightbox" data-gallery="example-gallery" class="col-sm-4"><img src="/assets/thumb/{{.}}" class="img-fluid img-circle"></a>
+{{range .MyVar.ListMem}}
+<a href="/assets/{{.}}"  data-toggle="lightbox" data-gallery="example-gallery" class="col-sm-4"><img src="/assets/thumb/{{.}}" class="img-fluid rounded-circle"></a>
 {{end}}
+<br><br>
+</div>
+</div>
+</div>
+<div class="container">
+<div class="col-md-8">
+<br><br>
+{{if .MyVar.Prev}}
+<a class="btn btn-info float-left" href="/images?page={{red .MyVar.PageNumber}}">Previous Page</a>
+{{end}}
+{{if .MyVar.Next}}
+<a class="btn btn-info float-right" href="/images?page={{add .MyVar.PageNumber}}">Next Page</a>
+{{end}}
+</div>
 </div>
 <br><br>
-{{if .Prev}}
-<a class="btn btn-info pull-left" href="/images?page={{red .PageNumber}}">Previous Page</a>
-{{end}}
-{{if .Next}}
-<a class="btn btn-info pull-right" href="/images?page={{add .PageNumber}}">Next Page</a>
-{{end}}
-</div>
-</div>
-</div>
 <script>
 $(document).on('click', '[data-toggle="lightbox"]', function(event) {
                 event.preventDefault();
