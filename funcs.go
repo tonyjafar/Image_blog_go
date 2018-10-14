@@ -142,11 +142,11 @@ func getAndUpdateRetry(u string) (bool, error) {
 	var retries string
 	getRetry := db.QueryRow("select retry from image_blog.Users where username = ?", u).Scan(&retries)
 	if getRetry != nil {
-		return false, getRetry
+		return true, getRetry
 	}
 	setRetry, err := strconv.Atoi(retries)
 	if err != nil {
-		return false, err
+		return true, err
 	}
 	setRetry = setRetry + 1
 	_, dbErr := db.Exec(
