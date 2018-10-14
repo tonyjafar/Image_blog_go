@@ -86,6 +86,12 @@ func login(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if un == name && pe == nil && !blocked {
+			db.Exec(
+				`
+				update image_blog.Users SET retry = 0 WHERE username = ?
+				`,
+				un,
+			)
 			s, _ := uuid.NewV4()
 			cookieValue := s.String() + "," + un
 			c := &http.Cookie{
@@ -169,12 +175,6 @@ func signout(w http.ResponseWriter, r *http.Request) {
 	db.Exec(
 		`
 		update image_blog.Users SET session = null WHERE username = ?
-		`,
-		username,
-	)
-	db.Exec(
-		`
-		update image_blog.Users SET retry = 0 WHERE username = ?
 		`,
 		username,
 	)
