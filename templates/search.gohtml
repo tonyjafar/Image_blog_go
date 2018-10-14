@@ -7,20 +7,39 @@
   <div class="form-group">
     <label>Search:</label>
     <input type="text" class="form-control" name="search" placeholder="Description">
+    </div>
+    <div class="form-group">
+    <label class="form-check-label" for="rad1">
+    <input type="radio" id="rad1" class="form-check-input" name="optradio" value="image">Search for images
+    </div>
+    </label>
+    <div class="form-group">
+    <label class="form-check-label" for="rad2">
+    <input type="radio" id="rad2" class="form-check-input" name="optradio" value="video">Search for videos
+    </label>
   </div>
+  <div class="form-group">
   <button type="submit" class="btn btn-default">Submit</button>
+  </div>
 </form> 
 </div>
 </div>
 <div class="container">
+{{ $i := index .MyVar.ImVi 0 }}
 {{if gt .MyVar.ListLength 0}}
-<a class="btn btn-info" href="/search?search={{.MyVar.Search}}&all">View All Images</a>
+<a class="btn btn-info" href="/search?search={{.MyVar.Search}}&optradio={{$i}}&all">View Them All</a>
 <br><br>
 {{end}}
 <div class="col-md-8">
 <div class="row">
 {{range .MyVar.ListMem}}
+{{ if eq  $i "image"}}
 <a href="/assets/{{.}}"  data-toggle="lightbox" data-gallery="example-gallery" class="col-sm-4"><img src="/assets/thumb/{{.}}" class="img-fluid img-thumbnail"></a>
+{{else}}
+<video class="col-sm-4" width="400" height="400" controls>
+<source src="/assets/videos/{{.}}" type="video/mp4">
+</video>
+{{end}}
 {{end}}
 </div>
 </div>
@@ -29,10 +48,10 @@
 <div class="container">
 <div class="col-md-8">
 {{if .MyVar.Prev}}
-<a class="btn btn-info float-left" href="/search?search={{.MyVar.Search}}&page={{red .MyVar.PageNumber}}">Previous Page</a>
+<a class="btn btn-info float-left" href="/search?search={{.MyVar.Search}}&optradio={{$i}}&page={{red .MyVar.PageNumber}}">Previous Page</a>
 {{end}}
 {{if .MyVar.Next}}
-<a class="btn btn-info float-right" href="/search?search={{.MyVar.Search}}&page={{add .MyVar.PageNumber}}">Next Page</a>
+<a class="btn btn-info float-right" href="/search?search={{.MyVar.Search}}&optradio={{$i}}&page={{add .MyVar.PageNumber}}">Next Page</a>
 {{end}}
 </div>
 </div>

@@ -51,6 +51,20 @@ func marchIt() string {
 	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8", parms.Username, parms.Password, parms.Ipaddress, parms.Port, parms.Database)
 }
 
+func handleFileServer(dir, prefix string) http.HandlerFunc {
+	fs := http.FileServer(http.Dir(dir))
+	realHandler := http.StripPrefix(prefix, fs).ServeHTTP
+	return func(w http.ResponseWriter, r *http.Request) {
+		if loggedIn(w, r) {
+			realHandler(w, r)
+			return
+		}
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
+}
+
 type SentVars struct {
 	ListLength int
 	PageNumber int
@@ -60,6 +74,7 @@ type SentVars struct {
 	ListStart  int
 	ListEnd    int
 	Search     string
+	ImVi       []string
 }
 
 var imageSlice = 30
@@ -75,6 +90,10 @@ func pageIt(w http.ResponseWriter, s *SentVars, r *http.Request, l []string, v b
 	r.ParseForm()
 	page := r.FormValue("page")
 	s.Search = r.FormValue("search")
+	s.ImVi = r.Form["optradio"]
+	if len(s.ImVi) == 0 {
+		s.ImVi = append(s.ImVi, "image")
+	}
 	if strings.Contains(r.RequestURI, "page") && (!strings.HasSuffix(r.RequestURI, "page=1")) {
 		s.PageNumber, err = strconv.Atoi(page)
 		if err != nil {

@@ -264,20 +264,6 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 	tpl.ExecuteTemplate(w, "uplimage.gohtml", SentData)
 }
 
-func handleFileServer(dir, prefix string) http.HandlerFunc {
-	fs := http.FileServer(http.Dir(dir))
-	realHandler := http.StripPrefix(prefix, fs).ServeHTTP
-	return func(w http.ResponseWriter, r *http.Request) {
-		if loggedIn(w, r) {
-			realHandler(w, r)
-			return
-		}
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-		return
-	}
-
-}
-
 func search(w http.ResponseWriter, r *http.Request) {
 	SentData := &Data
 	SentData.List = []string{}
@@ -294,23 +280,37 @@ func search(w http.ResponseWriter, r *http.Request) {
 	List := []string{}
 	SentData.Loggedin = true
 	if r.Method == http.MethodPost || strings.Contains(r.RequestURI, "page") || strings.Contains(r.RequestURI, "all") {
+		r.ParseForm()
 		s := r.FormValue("search")
+		rad := r.Form["optradio"]
 		if s == "" {
 			tpl.ExecuteTemplate(w, "search.gohtml", SentData)
 			return
 		}
 		newQuery := "%" + s + "%"
+		var query string
+		if len(rad) > 0 {
+			if rad[0] == "video" {
+				query = `SELECT name FROM
+				image_blog.videos
+				WHERE description LIKE ?
+				ORDER BY created_at DESC`
+			} else {
+				query = `SELECT name FROM
+				image_blog.images
+				WHERE description LIKE ?
+				ORDER BY created_at DESC`
+			}
+		} else {
+			query = `SELECT name FROM
+				image_blog.images
+				WHERE description LIKE ?
+				ORDER BY created_at DESC`
+		}
 
-		rows, err := db.Query(
-			`
-		SELECT name FROM
-image_blog.images
-WHERE description LIKE ?
-ORDER BY created_at DESC
-		`, newQuery,
-		)
+		rows, err := db.Query(query, newQuery)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println(err.Error())
 			return
 		}
 		var name string
