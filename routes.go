@@ -79,16 +79,22 @@ func login(w http.ResponseWriter, r *http.Request) {
 		bp := []byte(p)
 		st2 := []byte(pass)
 		pe := bcrypt.CompareHashAndPassword(st2, bp)
-		if un == name && pe == nil {
+		blocked, err := getAndUpdateRetry(un)
+		if err != nil {
+			SentData.UserError = true
+			tpl.ExecuteTemplate(w, "signin.gohtml", SentData)
+			return
+		}
+		if un == name && pe == nil && !blocked {
 			s, _ := uuid.NewV4()
+			cookieValue := s.String() + "," + un
 			c := &http.Cookie{
 				Name:   "session",
-				Value:  s.String(),
+				Value:  cookieValue,
 				MaxAge: cAge,
 			}
 			http.SetCookie(w, c)
-			dbUser = un
-			err := updateUserSession(s.String())
+			err := updateUserSession(s.String(), un)
 			if err != nil {
 				SentData.UserError = true
 				tpl.ExecuteTemplate(w, "signin.gohtml", SentData)
@@ -158,12 +164,19 @@ func signout(w http.ResponseWriter, r *http.Request) {
 	}
 	c.MaxAge = -1
 	http.SetCookie(w, c)
+	username := strings.Split(c.Value, ",")[1]
 	SentData.Loggedin = false
 	db.Exec(
 		`
 		update image_blog.Users SET session = null WHERE username = ?
 		`,
-		dbUser,
+		username,
+	)
+	db.Exec(
+		`
+		update image_blog.Users SET retry = 0 WHERE username = ?
+		`,
+		username,
 	)
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 	return

@@ -17,7 +17,6 @@ const (
 var tpl *template.Template
 var db *sql.DB
 var err error
-var dbUser string
 
 var Data struct {
 	Loggedin  bool

@@ -25,11 +25,13 @@ func loggedIn(w http.ResponseWriter, r *http.Request) bool {
 		return false
 	}
 	var session string
-	dbSession := db.QueryRow("select session from image_blog.Users where username = ?", dbUser).Scan(&session)
+	username := strings.Split(c.Value, ",")[1]
+	cookieSession := strings.Split(c.Value, ",")[0]
+	dbSession := db.QueryRow("select session from image_blog.Users where username = ?", username).Scan(&session)
 	if dbSession != nil {
 		return false
 	}
-	if c.Value != session {
+	if cookieSession != session {
 		return false
 	}
 	return true
@@ -125,12 +127,38 @@ func pageIt(w http.ResponseWriter, s *SentVars, r *http.Request, l []string, v b
 	}
 }
 
-func updateUserSession(s string) error {
+func updateUserSession(s, u string) error {
 	_, err := db.Exec(
 		`
-		update image_blog.Users set session = (?)
+		update image_blog.Users set session = (?) where username = (?)
 		`,
 		s,
+		u,
 	)
 	return err
+}
+
+func getAndUpdateRetry(u string) (bool, error) {
+	var retries string
+	getRetry := db.QueryRow("select retry from image_blog.Users where username = ?", u).Scan(&retries)
+	if getRetry != nil {
+		return false, getRetry
+	}
+	setRetry, err := strconv.Atoi(retries)
+	if err != nil {
+		return false, err
+	}
+	setRetry = setRetry + 1
+	_, dbErr := db.Exec(
+		`
+		update image_blog.Users set retry = (?) where username = (?)
+		`,
+		setRetry,
+		u,
+	)
+	if setRetry >= 5 {
+		return true, dbErr
+	}
+	return false, dbErr
+
 }
