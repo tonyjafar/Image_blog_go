@@ -167,7 +167,7 @@ func getAndUpdateRetry(u string) (bool, error) {
 	if err != nil {
 		return true, err
 	}
-	setRetry = setRetry + 1
+	setRetry++
 	_, dbErr := db.Exec(
 		`
 		update image_blog.Users set retry = (?) where username = (?)
