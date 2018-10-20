@@ -279,7 +279,9 @@ func search(w http.ResponseWriter, r *http.Request) {
 	c.MaxAge = cAge
 	List := []string{}
 	SentData.Loggedin = true
+	var v bool
 	if r.Method == http.MethodPost || strings.Contains(r.RequestURI, "page") || strings.Contains(r.RequestURI, "all") {
+		video := &v
 		r.ParseForm()
 		s := r.FormValue("search")
 		rad := r.Form["optradio"]
@@ -295,17 +297,20 @@ func search(w http.ResponseWriter, r *http.Request) {
 				image_blog.videos
 				WHERE description LIKE ?
 				ORDER BY created_at DESC`
+				*video = true
 			} else {
 				query = `SELECT name FROM
 				image_blog.images
 				WHERE description LIKE ?
 				ORDER BY created_at DESC`
+				*video = false
 			}
 		} else {
 			query = `SELECT name FROM
 				image_blog.images
 				WHERE description LIKE ?
 				ORDER BY created_at DESC`
+			*video = false
 		}
 
 		rows, err := db.Query(query, newQuery)
@@ -324,7 +329,7 @@ func search(w http.ResponseWriter, r *http.Request) {
 		}
 		SentData.List = List
 	}
-	pageIt(w, &SentData.MyVar, r, SentData.List, false)
+	pageIt(w, &SentData.MyVar, r, SentData.List, v)
 	tpl.ExecuteTemplate(w, "search.gohtml", &SentData)
 	return
 
