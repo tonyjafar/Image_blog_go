@@ -24,7 +24,7 @@
 <br>
 </div>
 {{range .List}}
-<a href="/assets/{{.}}"  data-toggle="lightbox" class="col-sm-4"><img src="/assets/thumb/{{.}}" class="img-fluid img-thumbnail"></a>
+<a href="/assets/{{.}}"  data-toggle="lightbox" data-gallery="my-gal" class="col-sm-4"><img src="/assets/thumb/{{.}}" class="img-fluid img-thumbnail"></a>
 {{end}}
 {{end}}
 </div>
@@ -34,6 +34,7 @@
 $(document).on('click', '[data-toggle="lightbox"]', function(event) {
  event.preventDefault();
  $(this).ekkoLightbox({
+   showArrows: false,
  onShow: function() {
   $('.ekko-lightbox-container').append('<div class="rotate-button"><a href="#" class="pull-right rotate" style="font-size: 18px;padding: 3px 0;"><i class="fa fa-repeat" aria-hidden="true"></i> Rotate</a></div>')
 
