@@ -128,6 +128,9 @@ func images(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
 		return
 	}
+	if strings.HasSuffix(r.RequestURI, ".css") {
+		w.Header().Set("Content-Type", "text/css; charset=utf-8")
+	}
 	List := []string{}
 	c.MaxAge = cAge
 	http.SetCookie(w, c)
