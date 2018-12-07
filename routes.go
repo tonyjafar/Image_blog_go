@@ -227,24 +227,27 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 			}
 			path := filepath.Join(wd, "data", n)
 			nf, err := os.Create(path)
+            defer nf.Close()
 			if err != nil {
 				SentData.ErrorFile.IsError = true
 				SentData.ErrorFile.ErrorType = "Create Path"
 				tpl.ExecuteTemplate(w, "uplimage.gohtml", SentData)
 				return
 			}
-			defer nf.Close()
 			mf.Seek(0, 0)
 			io.Copy(nf, mf)
 			image := &Image{n, l, s, tn, d}
-			i := Save(image)
 			scrImage, err := imaging.Open("./data/" + image.Name)
 			if err != nil {
+                mf.Close()
+                nf.Close()
+                os.Remove(path)
 				SentData.ErrorFile.IsError = true
 				SentData.ErrorFile.ErrorType = err.Error()
 				tpl.ExecuteTemplate(w, "uplimage.gohtml", SentData)
 				return
 			}
+            i := Save(image)
 			dstImage := imaging.Thumbnail(scrImage, widthThumbnail, widthThumbnail, imaging.Lanczos)
 			destination := "./data/thumb/" + image.Name
 			it := imaging.Save(dstImage, destination)
