@@ -68,5 +68,6 @@ func main() {
 	http.HandleFunc("/add_image", addImage)
 	http.HandleFunc("/add_video", addVideo)
 	http.HandleFunc("/search", search)
+	go lastActivity()
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }
