@@ -9,6 +9,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var parms struct {
@@ -34,7 +35,40 @@ func loggedIn(w http.ResponseWriter, r *http.Request) bool {
 	if cookieSession != session {
 		return false
 	}
+	db.Exec(
+		`
+		update image_blog.Users set last_activity = ? where username = ?
+		`,
+		time.Now(),
+		username,
+	)
 	return true
+}
+
+func lastActivity() {
+	for {
+		timeFormat := "2006-01-02 15:04:05"
+		var username string
+		var lastActivity string
+		allUsers, _ := db.Query("select username, last_activity from image_blog.Users where session is NOT NULL")
+		for allUsers.Next() {
+			err := allUsers.Scan(&username, &lastActivity)
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			sessionTime, err := time.Parse(timeFormat, lastActivity)
+			if err != nil {
+				fmt.Println(err.Error())
+			}
+			timeAfterLastLogin := time.Since(sessionTime).Seconds()
+			if timeAfterLastLogin > float64(cAge) {
+				db.Exec("update image_blog.Users set session = NULL where username = ?", username)
+			}
+		}
+		time.Sleep(864000000) //run every one day
+
+	}
 }
 
 func marchIt() string {
