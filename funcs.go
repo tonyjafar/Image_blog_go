@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -46,41 +45,40 @@ func loggedIn(w http.ResponseWriter, r *http.Request) bool {
 }
 
 func lastActivity() {
-	for {
-		timeFormat := "2006-01-02 15:04:05"
-		var username string
-		var lastActivity string
-		allUsers, _ := db.Query("select username, last_activity from image_blog.Users where session is NOT NULL")
-		for allUsers.Next() {
-			err := allUsers.Scan(&username, &lastActivity)
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
-			sessionTime, err := time.Parse(timeFormat, lastActivity)
-			if err != nil {
-				fmt.Println(err.Error())
-			}
-			timeAfterLastLogin := time.Since(sessionTime).Seconds()
-			if timeAfterLastLogin > float64(cAge) {
-				db.Exec("update image_blog.Users set session = NULL where username = ?", username)
-			}
+	log.Debug("Started")
+	timeFormat := "2006-01-02 15:04:05"
+	var username string
+	var lastActivity string
+	allUsers, _ := db.Query("select username, last_activity from image_blog.Users where session is NOT NULL")
+	for allUsers.Next() {
+		err := allUsers.Scan(&username, &lastActivity)
+		if err != nil {
+			fmt.Println(err)
+			return
 		}
-		time.Sleep(864000000) //run every one day
-
+		sessionTime, err := time.Parse(timeFormat, lastActivity)
+		if err != nil {
+			fmt.Println(err.Error())
+		}
+		timeAfterLastLogin := time.Since(sessionTime).Seconds()
+		if timeAfterLastLogin > float64(cAge) {
+			db.Exec("update image_blog.Users set session = NULL where username = ?", username)
+		}
 	}
+	time.Sleep(864000000) //run every one day
+
 }
 
 func marchIt() string {
 	f, err := os.Open("conf.json")
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(err.Error())
 	}
 	defer f.Close()
 	fb, err := ioutil.ReadAll(f)
 	j := json.Unmarshal(fb, &parms)
 	if j != nil {
-		log.Fatal(j)
+		log.Fatal(j.Error())
 	}
 	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8", parms.Username, parms.Password, parms.Ipaddress, parms.Port, parms.Database)
 }

@@ -3,10 +3,12 @@ package main
 import (
 	"database/sql"
 	"html/template"
-	"log"
 	"net/http"
+	"os"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/op/go-logging"
 )
 
 const (
@@ -14,6 +16,10 @@ const (
 	widthThumbnail int = 400
 )
 
+var log = logging.MustGetLogger("appLogger.log")
+var format = logging.MustStringFormatter(
+	`%{time:15:04:05.000} %{shortfunc} [%{level:.4s}] %{id:03x} %{message}`,
+)
 var tpl *template.Template
 var db *sql.DB
 var err error
@@ -49,7 +55,7 @@ func red(p int) int {
 func init() {
 	db, err = sql.Open("mysql", marchIt())
 	if err != nil {
-		log.Fatal(err)
+		log.Critical(err.Error())
 	}
 	tpl = template.Must(template.New("").Funcs(num).ParseGlob("templates/*.gohtml"))
 
@@ -57,6 +63,20 @@ func init() {
 
 func main() {
 	defer db.Close()
+	t := time.Now()
+	logFileName := "access-" + t.Format("2006-01-02T150405") + ".log"
+	f, err := os.OpenFile(logFileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("error opening file: %v", err)
+	}
+	defer f.Close()
+	backend1 := logging.NewLogBackend(f, "", 0)
+	backend2 := logging.NewLogBackend(f, "", 0)
+	backend2Formatter := logging.NewBackendFormatter(backend2, format)
+	backend1Leveled := logging.AddModuleLevel(backend1)
+	backend1Leveled.SetLevel(logging.ERROR, "")
+	logging.SetBackend(backend1Leveled, backend2Formatter)
+	log.Debug("APP STARTED")
 	http.HandleFunc("/assets/", handleFileServer("./data", "/assets"))
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 	http.Handle("/favicon.ico", http.NotFoundHandler())
@@ -69,5 +89,5 @@ func main() {
 	http.HandleFunc("/add_video", addVideo)
 	http.HandleFunc("/search", search)
 	go lastActivity()
-	log.Fatal(http.ListenAndServe(":8000", nil))
+	log.Critical(http.ListenAndServe(":8000", nil))
 }
