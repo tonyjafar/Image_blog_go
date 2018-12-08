@@ -34,14 +34,14 @@ LIMIT 6
 			`,
 		)
 		if err != nil {
-			fmt.Println(err)
+			log.Error(err.Error())
 			return
 		}
 		var name string
 		for rows.Next() {
 			err := rows.Scan(&name)
 			if err != nil {
-				fmt.Println(err)
+				log.Error(err.Error())
 				return
 			}
 			List = append(List, name)
@@ -82,6 +82,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 		blocked, err := getAndUpdateRetry(un)
 		if err != nil {
 			SentData.UserError = true
+			log.Fatalf("Unable to connect to databese to determine the status of the User - %s", err.Error())
 			tpl.ExecuteTemplate(w, "signin.gohtml", SentData)
 			return
 		}
@@ -103,12 +104,15 @@ func login(w http.ResponseWriter, r *http.Request) {
 			err := updateUserSession(s.String(), un)
 			if err != nil {
 				SentData.UserError = true
+				log.Fatalf("Can not update the user session after login - %s", err.Error())
 				tpl.ExecuteTemplate(w, "signin.gohtml", SentData)
 				return
 			}
+			log.Infof("User %s logged in", un)
 			http.Redirect(w, r, "/images", http.StatusSeeOther)
 			return
 		} else {
+			log.Error("Authentication Failed!!")
 			SentData.UserError = true
 			tpl.ExecuteTemplate(w, "signin.gohtml", SentData)
 			return
@@ -143,14 +147,14 @@ ORDER BY created_at DESC
 		`,
 	)
 	if err != nil {
-		fmt.Println(err)
+		log.Error(err.Error())
 		return
 	}
 	var name string
 	for rows.Next() {
 		err := rows.Scan(&name)
 		if err != nil {
-			fmt.Println(err)
+			log.Error(err.Error())
 			return
 		}
 		List = append(List, name)
@@ -181,6 +185,7 @@ func signout(w http.ResponseWriter, r *http.Request) {
 		`,
 		username,
 	)
+	log.Infof("User %s logged out", username)
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 	return
 }
@@ -220,6 +225,7 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 			n := fmt.Sprintf("%x", h.Sum(nil)) + "." + ext
 			wd, err := os.Getwd()
 			if err != nil {
+				log.Error(err.Error())
 				SentData.ErrorFile.IsError = true
 				SentData.ErrorFile.ErrorType = err.Error()
 				tpl.ExecuteTemplate(w, "uplimage.gohtml", SentData)
@@ -229,6 +235,7 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 			nf, err := os.Create(path)
 			defer nf.Close()
 			if err != nil {
+				log.Error(err.Error())
 				SentData.ErrorFile.IsError = true
 				SentData.ErrorFile.ErrorType = "Create Path"
 				tpl.ExecuteTemplate(w, "uplimage.gohtml", SentData)
@@ -239,6 +246,7 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 			image := &Image{n, l, s, tn, d}
 			scrImage, err := imaging.Open("./data/" + image.Name)
 			if err != nil {
+				log.Error(err.Error())
 				mf.Close()
 				nf.Close()
 				os.Remove(path)
@@ -321,14 +329,14 @@ func search(w http.ResponseWriter, r *http.Request) {
 
 		rows, err := db.Query(query, newQuery)
 		if err != nil {
-			fmt.Println(err.Error())
+			log.Error(err.Error())
 			return
 		}
 		var name string
 		for rows.Next() {
 			err := rows.Scan(&name)
 			if err != nil {
-				fmt.Println(err)
+				log.Error(err.Error())
 				return
 			}
 			List = append(List, name)
@@ -363,6 +371,7 @@ func addVideo(w http.ResponseWriter, r *http.Request) {
 		for _, fhm := range fhs {
 			mf, err := fhm.Open()
 			if err != nil {
+				log.Error(err.Error())
 				SentData.ErrorFile.IsError = true
 				SentData.ErrorFile.ErrorType = err.Error()
 				tpl.ExecuteTemplate(w, "uploadvideo.gohtml", SentData)
@@ -376,6 +385,7 @@ func addVideo(w http.ResponseWriter, r *http.Request) {
 			n := fmt.Sprintf("%x", h.Sum(nil)) + "." + ext
 			wd, err := os.Getwd()
 			if err != nil {
+				log.Error(err.Error())
 				SentData.ErrorFile.IsError = true
 				SentData.ErrorFile.ErrorType = err.Error()
 				tpl.ExecuteTemplate(w, "uploadvideo.gohtml", SentData)
@@ -384,6 +394,7 @@ func addVideo(w http.ResponseWriter, r *http.Request) {
 			path := filepath.Join(wd, "data/videos", n)
 			nf, err := os.Create(path)
 			if err != nil {
+				log.Error(err.Error())
 				SentData.ErrorFile.IsError = true
 				SentData.ErrorFile.ErrorType = err.Error()
 				tpl.ExecuteTemplate(w, "uploadvideo.gohtml", SentData)
@@ -436,14 +447,14 @@ ORDER BY created_at DESC
 		`,
 	)
 	if err != nil {
-		fmt.Println(err)
+		log.Error(err.Error())
 		return
 	}
 	var name string
 	for rows.Next() {
 		err := rows.Scan(&name)
 		if err != nil {
-			fmt.Println(err)
+			log.Error(err.Error())
 			return
 		}
 		List = append(List, name)
