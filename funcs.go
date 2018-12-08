@@ -48,15 +48,15 @@ func lastActivity() {
 	log.Debug("Started")
 	timeFormat := "2006-01-02 15:04:05"
 	var username string
-	var lastActivity string
+	var lastActivityTime string
 	allUsers, _ := db.Query("select username, last_activity from image_blog.Users where session is NOT NULL")
 	for allUsers.Next() {
-		err := allUsers.Scan(&username, &lastActivity)
+		err := allUsers.Scan(&username, &lastActivityTime)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		sessionTime, err := time.Parse(timeFormat, lastActivity)
+		sessionTime, err := time.Parse(timeFormat, lastActivityTime)
 		if err != nil {
 			fmt.Println(err.Error())
 		}
@@ -65,8 +65,8 @@ func lastActivity() {
 			db.Exec("update image_blog.Users set session = NULL where username = ?", username)
 		}
 	}
-	time.Sleep(864000000) //run every one day
-
+	time.Sleep(24 * time.Hour) //run every one day
+	lastActivity()
 }
 
 func marchIt() string {
