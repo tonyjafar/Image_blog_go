@@ -88,6 +88,6 @@ func main() {
 	http.HandleFunc("/add_image", addImage)
 	http.HandleFunc("/add_video", addVideo)
 	http.HandleFunc("/search", search)
-	lastActivity()
+	go lastActivity()
 	log.Critical(http.ListenAndServe(":8000", nil))
 }
