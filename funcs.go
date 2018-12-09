@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -212,4 +213,9 @@ func getAndUpdateRetry(u string) (bool, error) {
 	}
 	return false, dbErr
 
+}
+
+func checkFileName(f string) bool {
+	match, _ := regexp.MatchString("^.+\\.\\w{1,}", f)
+	return match
 }

@@ -219,6 +219,13 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 			}
 			defer mf.Close()
 			s := fhm.Size
+			if !checkFileName(fhm.Filename) {
+				SentData.ErrorFile.IsError = true
+				SentData.ErrorFile.ErrorType = "File name does not contian extension"
+				log.Errorf("File %s name error", fhm.Filename)
+				tpl.ExecuteTemplate(w, "uplimage.gohtml", SentData)
+				return
+			}
 			ext := strings.Split(fhm.Filename, ".")[1]
 			h := sha1.New()
 			io.Copy(h, mf)
