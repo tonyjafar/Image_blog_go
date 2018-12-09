@@ -112,7 +112,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/images", http.StatusSeeOther)
 			return
 		} else {
-			log.Error("Authentication Failed!!")
+			log.Errorf("Authentication Failed!! - using username %s", un)
 			SentData.UserError = true
 			tpl.ExecuteTemplate(w, "signin.gohtml", SentData)
 			return
