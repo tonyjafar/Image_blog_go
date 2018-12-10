@@ -82,7 +82,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 		blocked, err := getAndUpdateRetry(un)
 		if err != nil {
 			SentData.UserError = true
-			log.Fatalf("Unable to connect to databese to determine the status of the User - %s", err.Error())
+			log.Errorf("Unable to connect to databese to determine the status of the User - %s", err.Error())
 			tpl.ExecuteTemplate(w, "signin.gohtml", SentData)
 			return
 		}
@@ -104,7 +104,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 			err := updateUserSession(s.String(), un)
 			if err != nil {
 				SentData.UserError = true
-				log.Fatalf("Can not update the user session after login - %s", err.Error())
+				log.Errorf("Can not update the user session after login - %s", err.Error())
 				tpl.ExecuteTemplate(w, "signin.gohtml", SentData)
 				return
 			}

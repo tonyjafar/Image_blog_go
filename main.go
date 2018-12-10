@@ -70,11 +70,11 @@ func main() {
 		log.Fatalf("error opening file: %v", err)
 	}
 	defer f.Close()
-	backend1 := logging.NewLogBackend(f, "", 0)
 	backend2 := logging.NewLogBackend(f, "", 0)
 	backend2Formatter := logging.NewBackendFormatter(backend2, format)
-	backend1Leveled := logging.AddModuleLevel(backend1)
+	backend1Leveled := logging.AddModuleLevel(backend2)
 	backend1Leveled.SetLevel(logging.ERROR, "")
+	backend1Leveled.SetLevel(logging.CRITICAL, "")
 	logging.SetBackend(backend1Leveled, backend2Formatter)
 	log.Debug("APP STARTED")
 	http.HandleFunc("/assets/", handleFileServer("./data", "/assets"))
@@ -89,5 +89,5 @@ func main() {
 	http.HandleFunc("/add_video", addVideo)
 	http.HandleFunc("/search", search)
 	go lastActivity()
-	log.Critical(http.ListenAndServe(":8000", nil))
+	log.Fatal(http.ListenAndServe(":8000", nil))
 }
