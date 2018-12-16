@@ -55,7 +55,7 @@ func red(p int) int {
 func init() {
 	db, err = sql.Open("mysql", marchIt())
 	if err != nil {
-		log.Critical(err.Error())
+		log.Fatal(err.Error())
 	}
 	tpl = template.Must(template.New("").Funcs(num).ParseGlob("templates/*.gohtml"))
 

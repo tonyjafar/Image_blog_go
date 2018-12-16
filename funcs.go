@@ -66,6 +66,7 @@ func lastActivity() {
 			db.Exec("update image_blog.Users set session = NULL where username = ?", username)
 		}
 	}
+	log.Debug("Finished")
 	time.Sleep(24 * time.Hour) //run every one day
 	lastActivity()
 }
@@ -209,6 +210,7 @@ func getAndUpdateRetry(u string) (bool, error) {
 		u,
 	)
 	if setRetry >= 5 {
+		log.Criticalf("User %s is blocked", u)
 		return true, dbErr
 	}
 	return false, dbErr
