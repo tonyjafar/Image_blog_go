@@ -134,7 +134,7 @@ func pageIt(w http.ResponseWriter, s *SentVars, r *http.Request, l []string, v b
 			http.Redirect(w, r, "/", http.StatusSeeOther)
 			return
 		}
-		if s.PageNumber < 0 {
+		if s.PageNumber <= 0 {
 			http.Redirect(w, r, "/", http.StatusSeeOther)
 			return
 		}
