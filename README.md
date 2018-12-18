@@ -21,7 +21,7 @@
     └── uplimage.gohtml
 ```
 ## User Table
-id, username, password, session, retry, last_activity
+id, username, password, session, retry, last_activity, admin
 , password created using golang.org/x/crypto/bcrypt
 ```
 func GenerateFromPassword(password []byte, cost int) ([]byte, error) {
