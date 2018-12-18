@@ -1,0 +1,58 @@
+{{template "header-admin" .}}
+
+    <div id="wrapper">
+
+        {{template "navi-admin" .}}
+
+        <div id="page-wrapper">
+
+            <div class="container-fluid">
+
+                <!-- Page Heading -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h1 class="page-header">
+                            Welcome to Admin
+                           <small>{{.Username}}</small>
+                        </h1>
+                    </div>
+                    <div class="col-xs-12">
+           <form action="" method="POST">
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="search-admin" placeholder="Search by Name">
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" type="submit">
+                                <span class="glyphicon glyphicon-search"></span>
+                        </button>
+                        </span>
+                    </div>
+                    </form>
+                       
+                    <div></div>
+                </div>
+                    <div class="col-xs-6">
+</div>
+          
+            </div>
+        
+       </div>
+
+       <table class='table table-hover'>
+  <thead>
+    <tr>
+      <th scope='col'>Name</th>
+      <th scope='col'>Location</th>
+      <th scope='col'>Description</th>
+      <th scope='col'>Created</th>
+      <th scope='col'>Edit</th>
+      <th scope='col'>Delete</th>
+    </tr>
+  </thead>
+  <tbody>
+ {{range .ImagesInfo}}                       
+<tr><th scope='row'>{{.Name}}</th><td>{{.Location}}</td><td>{{.Description}}</td><td>{{.CreatedAt}}</td><td><a class='btn btn-success' href='/edit-video?name={{.Name}}'>Edit<span class='glyphicon glyphicon-chevron-right'></span></a></td><td><a class='btn btn-danger' href='/delete-video?delete={{.Name}}'>Delete<span class='glyphicon glyphicon-chevron-right'></span></a></td></tr>
+{{end}}
+</tbody>
+</table>
+        
+{{template "footer-admin" .}}

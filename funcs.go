@@ -221,3 +221,15 @@ func checkFileName(f string) bool {
 	match, _ := regexp.MatchString("^.+\\.\\w{1,}", f)
 	return match
 }
+
+func isAdmin(u string) bool {
+	var admin string
+	getStatus := db.QueryRow("select admin from image_blog.Users where username = ?", u).Scan(&admin)
+	if getStatus != nil {
+		return false
+	}
+	if admin != "yes" {
+		return false
+	}
+	return true
+}

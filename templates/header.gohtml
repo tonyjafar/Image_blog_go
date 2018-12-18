@@ -31,11 +31,14 @@
         <a class="nav-item nav-link" href="/images">Images</a>
         <a class="nav-item nav-link" href="/videos">Videos</a>
         <a class="nav-item nav-link" href="/search">Search</a>
-        <a class="nav-item nav-link" href="/add_image">Add Images</a>
-        <a class="nav-item nav-link" href="/add_video">Add Videos</a>
         <a class="nav-item nav-link" href="/signout">Sign Out</a>
         {{else}}
         <a class="nav-item nav-link" href="/signin">Sign In</a>
+        {{end}}
+        {{if eq .Admin true}}
+        <a class="nav-item nav-link" href="/add_image">Add Images</a>
+        <a class="nav-item nav-link" href="/add_video">Add Videos</a>
+        <a class="nav-item nav-link" href="/admin">Admin</a>
         {{end}}
     </div>
   </div>
