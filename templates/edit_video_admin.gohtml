@@ -1,0 +1,62 @@
+{{template "header-admin" .}}
+
+    <div id="wrapper">
+
+       {{template "navi-admin" .}}
+
+        <div id="page-wrapper">
+
+            <div class="container-fluid">
+
+                <!-- Page Heading -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h1 class="page-header">
+                            Welcome to Admin
+                            <small>{{.Username}}</small>
+                        </h1>
+                    </div>
+                    <div class="col-xs-6">
+                    {{range .ImagesInfo}}
+                     <form action="/edit-video?name={{.Name}}" method="post">
+                     {{end}}
+    
+        <div class="form-group">
+           <label for="Name">Video Name</label>
+           {{range .ImagesInfo}}
+           <input class="form-control" id="Name" type="text" name="name" value="{{.Name}}" disabled>
+           {{end}}
+           </div>
+           <div class="form-group">
+
+               <label for="Location">Location</label>
+                {{range .ImagesInfo}}
+           <input class="form-control" id="Location" type="text" name="location" value="{{.Location}}">
+           {{end}}
+
+        </div>
+           <div class="form-group">
+ 
+           <label for="description">Description</label>
+           {{range .ImagesInfo}}
+            <input class="form-control" id="description" type="text" name="description" value="{{.Description}}">
+            {{end}}
+        </div>
+        <div class="form-group">
+
+           <label for="createdAt">Created</label>
+           {{range .ImagesInfo}}
+            <input class="form-control" id="createdAt" type="text" name="createdAt" value="{{.CreatedAt}}">
+            {{end}}
+        </div>
+        <br><br>
+        <div class="form-group">
+            <input class='btn btn-success form-group' type='submit' value='Edit Video' name='submit'>
+        </div>
+    </form>
+                </div>
+            </div>
+            </div>
+        <br><br>
+</div>
+{{template "footer-admin" .}}

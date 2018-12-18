@@ -25,12 +25,37 @@ var db *sql.DB
 var err error
 
 var Data struct {
-	Loggedin  bool
-	Nofile    bool
-	ErrorFile FileError
-	UserError bool
-	List      []string
-	MyVar     SentVars
+	Loggedin   bool
+	Admin      bool
+	Nofile     bool
+	ErrorFile  FileError
+	UserError  bool
+	List       []string
+	MyVar      SentVars
+	Username   string
+	Statics    AdminStatics
+	ImagesInfo []Images
+	UsersInfo  []Users
+}
+
+type Images struct {
+	Name        string
+	Location    string
+	Description string
+	CreatedAt   string
+}
+
+type Users struct {
+	Username string
+	Admin    string
+}
+
+type AdminStatics struct {
+	ImageCount  string
+	VideoCount  string
+	UserCount   string
+	BlockedUser string
+	AdminSearch bool
 }
 
 type FileError struct {
@@ -88,6 +113,16 @@ func main() {
 	http.HandleFunc("/add_image", addImage)
 	http.HandleFunc("/add_video", addVideo)
 	http.HandleFunc("/search", search)
+	http.HandleFunc("/admin", admin)
+	http.HandleFunc("/images-admin", imagesAdmin)
+	http.HandleFunc("/delete-image", imagesAdminDelete)
+	http.HandleFunc("/edit-image", imagesAdminEdit)
+	http.HandleFunc("/videos-admin", videosAdmin)
+	http.HandleFunc("/delete-video", videosAdminDelete)
+	http.HandleFunc("/edit-video", videosAdminEdit)
+	http.HandleFunc("/users-admin", usersAdmin)
+	http.HandleFunc("/edit-user", usersAdminChange)
+	http.HandleFunc("/add-user", addUserAdmin)
 	go lastActivity()
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }

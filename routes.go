@@ -109,6 +109,10 @@ func login(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			log.Infof("User %s logged in", un)
+			SentData.Username = un
+			if isAdmin(un) {
+				SentData.Admin = true
+			}
 			http.Redirect(w, r, "/images", http.StatusSeeOther)
 			return
 		} else {
@@ -186,6 +190,7 @@ func signout(w http.ResponseWriter, r *http.Request) {
 		username,
 	)
 	log.Infof("User %s logged out", username)
+	SentData.Admin = false
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 	return
 }
@@ -204,6 +209,11 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 	}
 	c.MaxAge = cAge
 	http.SetCookie(w, c)
+	username := strings.Split(c.Value, ",")[1]
+	if !isAdmin(username) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
 	if r.Method == http.MethodPost {
 		tn := time.Now()
 		l := r.FormValue("location")
@@ -370,6 +380,11 @@ func addVideo(w http.ResponseWriter, r *http.Request) {
 	}
 	c.MaxAge = cAge
 	http.SetCookie(w, c)
+	username := strings.Split(c.Value, ",")[1]
+	if !isAdmin(username) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
 	if r.Method == http.MethodPost {
 		tn := time.Now()
 		l := r.FormValue("location")
@@ -470,4 +485,464 @@ ORDER BY created_at DESC
 	pageIt(w, &SentData.MyVar, r, List, true)
 	tpl.ExecuteTemplate(w, "videos.gohtml", SentData)
 
+}
+
+func admin(w http.ResponseWriter, r *http.Request) {
+	if !loggedIn(w, r) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	c, _ := r.Cookie("session")
+	username := strings.Split(c.Value, ",")[1]
+	if !isAdmin(username) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	SentData := &Data
+	SentData.Admin = true
+	var imageCount, videoCount, userCount, blockedUser string
+	db.QueryRow("select count(*) from image_blog.images").Scan(&imageCount)
+	db.QueryRow("select count(*) from image_blog.videos").Scan(&videoCount)
+	db.QueryRow("select count(*) from image_blog.Users").Scan(&userCount)
+	db.QueryRow("select count(*) from image_blog.Users where retry >= 5").Scan(&blockedUser)
+	SentData.Statics.ImageCount = imageCount
+	SentData.Statics.VideoCount = videoCount
+	SentData.Statics.UserCount = userCount
+	SentData.Statics.BlockedUser = blockedUser
+	tpl.ExecuteTemplate(w, "index-admin.gohtml", SentData)
+}
+
+func imagesAdmin(w http.ResponseWriter, r *http.Request) {
+	if !loggedIn(w, r) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	c, _ := r.Cookie("session")
+	username := strings.Split(c.Value, ",")[1]
+	if !isAdmin(username) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	SentData := &Data
+	SentData.Admin = true
+	if r.Method == http.MethodPost {
+		List := []Images{}
+		r.ParseForm()
+		s := r.FormValue("search-admin")
+		newQuery := "%" + s + "%"
+		query := `SELECT name,location,description, created_at FROM
+				image_blog.images
+				WHERE name LIKE ?
+				`
+		rows, err := db.Query(query, newQuery)
+		if err != nil {
+			log.Error(err.Error())
+			return
+		}
+		var name, location, description, createdAt string
+		for rows.Next() {
+			err := rows.Scan(&name, &location, &description, &createdAt)
+			if err != nil {
+				log.Error(err.Error())
+				return
+			}
+			image := Images{name, location, description, createdAt}
+			List = append(List, image)
+		}
+		SentData.Statics.AdminSearch = true
+		SentData.ImagesInfo = List
+		tpl.ExecuteTemplate(w, "images-admin.gohtml", &SentData)
+		return
+	}
+	query := `SELECT name,location,description, created_at FROM
+				image_blog.images
+				`
+	rows, err := db.Query(query)
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
+	List := []Images{}
+	var name, location, description, createdAt string
+	for rows.Next() {
+		err := rows.Scan(&name, &location, &description, &createdAt)
+		if err != nil {
+			log.Error(err.Error())
+			return
+		}
+		image := Images{name, location, description, createdAt}
+		List = append(List, image)
+	}
+	SentData.ImagesInfo = List
+	tpl.ExecuteTemplate(w, "images-admin.gohtml", &SentData)
+	return
+
+}
+
+func imagesAdminDelete(w http.ResponseWriter, r *http.Request) {
+	if !loggedIn(w, r) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	c, _ := r.Cookie("session")
+	username := strings.Split(c.Value, ",")[1]
+	if !isAdmin(username) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	if r.Method == http.MethodGet {
+		r.ParseForm()
+		name := r.FormValue("delete")
+		if name != "" {
+			db.Exec("delete from image_blog.images where name = ?", name)
+		}
+		http.Redirect(w, r, "/images-admin", http.StatusSeeOther)
+		return
+	}
+	http.Redirect(w, r, "/images-admin", http.StatusSeeOther)
+	return
+}
+
+func imagesAdminEdit(w http.ResponseWriter, r *http.Request) {
+	if !loggedIn(w, r) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	c, _ := r.Cookie("session")
+	username := strings.Split(c.Value, ",")[1]
+	if !isAdmin(username) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	SentData := &Data
+	if r.Method == http.MethodGet {
+
+		r.ParseForm()
+		name := r.FormValue("name")
+		if name != "" {
+			query := `SELECT name,location,description, created_at FROM
+				image_blog.images where name = ?
+				`
+			rows, err := db.Query(query, name)
+			if err != nil {
+				log.Error(err.Error())
+				return
+			}
+			List := []Images{}
+			var name, location, description, createdAt string
+			for rows.Next() {
+				err := rows.Scan(&name, &location, &description, &createdAt)
+				if err != nil {
+					log.Error(err.Error())
+					return
+				}
+				image := Images{name, location, description, createdAt}
+				List = append(List, image)
+			}
+			SentData.ImagesInfo = List
+			tpl.ExecuteTemplate(w, "edit_image_admin.gohtml", &SentData)
+			return
+
+		}
+	}
+	if r.Method == http.MethodPost {
+		r.ParseForm()
+		name := r.FormValue("name")
+		location := r.FormValue("location")
+		description := r.FormValue("description")
+		createdAt := r.FormValue("createdAt")
+		db.Exec("update image_blog.images set location = ?, description = ?, created_at = ? where name = ?",
+			location, description, createdAt, name)
+		List := []Images{}
+		image := Images{name, location, description, createdAt}
+		List = append(List, image)
+		SentData.ImagesInfo = List
+		tpl.ExecuteTemplate(w, "edit_image_admin.gohtml", &SentData)
+		return
+	}
+
+}
+
+func videosAdmin(w http.ResponseWriter, r *http.Request) {
+	if !loggedIn(w, r) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	c, _ := r.Cookie("session")
+	username := strings.Split(c.Value, ",")[1]
+	if !isAdmin(username) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	SentData := &Data
+	SentData.Admin = true
+	if r.Method == http.MethodPost {
+		List := []Images{}
+		r.ParseForm()
+		s := r.FormValue("search-admin")
+		newQuery := "%" + s + "%"
+		query := `SELECT name,location,description, created_at FROM
+				image_blog.videos
+				WHERE name LIKE ?
+				`
+		rows, err := db.Query(query, newQuery)
+		if err != nil {
+			log.Error(err.Error())
+			return
+		}
+		var name, location, description, createdAt string
+		for rows.Next() {
+			err := rows.Scan(&name, &location, &description, &createdAt)
+			if err != nil {
+				log.Error(err.Error())
+				return
+			}
+			image := Images{name, location, description, createdAt}
+			List = append(List, image)
+		}
+		SentData.Statics.AdminSearch = true
+		SentData.ImagesInfo = List
+		tpl.ExecuteTemplate(w, "videos-admin.gohtml", &SentData)
+		return
+	}
+	query := `SELECT name,location,description, created_at FROM
+				image_blog.videos
+				`
+	rows, err := db.Query(query)
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
+	List := []Images{}
+	var name, location, description, createdAt string
+	for rows.Next() {
+		err := rows.Scan(&name, &location, &description, &createdAt)
+		if err != nil {
+			log.Error(err.Error())
+			return
+		}
+		image := Images{name, location, description, createdAt}
+		List = append(List, image)
+	}
+	SentData.ImagesInfo = List
+	tpl.ExecuteTemplate(w, "videos-admin.gohtml", &SentData)
+	return
+
+}
+
+func videosAdminDelete(w http.ResponseWriter, r *http.Request) {
+	if !loggedIn(w, r) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	c, _ := r.Cookie("session")
+	username := strings.Split(c.Value, ",")[1]
+	if !isAdmin(username) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	if r.Method == http.MethodGet {
+		r.ParseForm()
+		name := r.FormValue("delete")
+		if name != "" {
+			db.Exec("delete from image_blog.videos where name = ?", name)
+		}
+		http.Redirect(w, r, "/videos-admin", http.StatusSeeOther)
+		return
+	}
+	http.Redirect(w, r, "/videos-admin", http.StatusSeeOther)
+	return
+}
+
+func videosAdminEdit(w http.ResponseWriter, r *http.Request) {
+	if !loggedIn(w, r) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	c, _ := r.Cookie("session")
+	username := strings.Split(c.Value, ",")[1]
+	if !isAdmin(username) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	SentData := &Data
+	if r.Method == http.MethodGet {
+
+		r.ParseForm()
+		name := r.FormValue("name")
+		if name != "" {
+			query := `SELECT name,location,description, created_at FROM
+				image_blog.videos where name = ?
+				`
+			rows, err := db.Query(query, name)
+			if err != nil {
+				log.Error(err.Error())
+				return
+			}
+			List := []Images{}
+			var name, location, description, createdAt string
+			for rows.Next() {
+				err := rows.Scan(&name, &location, &description, &createdAt)
+				if err != nil {
+					log.Error(err.Error())
+					return
+				}
+				image := Images{name, location, description, createdAt}
+				List = append(List, image)
+			}
+			SentData.ImagesInfo = List
+			tpl.ExecuteTemplate(w, "edit_video_admin.gohtml", &SentData)
+			return
+
+		}
+	}
+	if r.Method == http.MethodPost {
+		r.ParseForm()
+		name := r.FormValue("name")
+		location := r.FormValue("location")
+		description := r.FormValue("description")
+		createdAt := r.FormValue("createdAt")
+		db.Exec("update image_blog.videos set location = ?, description = ?, created_at = ? where name = ?",
+			location, description, createdAt, name)
+		List := []Images{}
+		image := Images{name, location, description, createdAt}
+		List = append(List, image)
+		SentData.ImagesInfo = List
+		tpl.ExecuteTemplate(w, "edit_video_admin.gohtml", &SentData)
+		return
+	}
+
+}
+
+func usersAdmin(w http.ResponseWriter, r *http.Request) {
+	if !loggedIn(w, r) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	c, _ := r.Cookie("session")
+	username := strings.Split(c.Value, ",")[1]
+	if !isAdmin(username) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	SentData := &Data
+	SentData.Admin = true
+	if r.Method == http.MethodPost {
+		List := []Users{}
+		r.ParseForm()
+		s := r.FormValue("search-admin")
+		newQuery := "%" + s + "%"
+		query := `SELECT username, admin FROM
+				image_blog.Users
+				WHERE username LIKE ?
+				`
+		rows, err := db.Query(query, newQuery)
+		if err != nil {
+			log.Error(err.Error())
+			return
+		}
+		var userName, admin string
+		for rows.Next() {
+			err := rows.Scan(&userName, &admin)
+			if err != nil {
+				log.Error(err.Error())
+				return
+			}
+			user := Users{userName, admin}
+			List = append(List, user)
+		}
+		SentData.Statics.AdminSearch = true
+		SentData.UsersInfo = List
+		tpl.ExecuteTemplate(w, "users-admin.gohtml", &SentData)
+		return
+	}
+	query := `SELECT username, admin FROM
+				image_blog.Users
+				`
+	rows, err := db.Query(query)
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
+	List := []Users{}
+	var userName, admin string
+	for rows.Next() {
+		err := rows.Scan(&userName, &admin)
+		if err != nil {
+			log.Error(err.Error())
+			return
+		}
+		user := Users{userName, admin}
+		List = append(List, user)
+	}
+	SentData.UsersInfo = List
+	tpl.ExecuteTemplate(w, "users-admin.gohtml", &SentData)
+	return
+
+}
+
+func usersAdminChange(w http.ResponseWriter, r *http.Request) {
+	if !loggedIn(w, r) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	c, _ := r.Cookie("session")
+	username := strings.Split(c.Value, ",")[1]
+	if !isAdmin(username) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	if r.Method == http.MethodGet {
+		r.ParseForm()
+		name := r.FormValue("name")
+		remove := r.FormValue("remove")
+		del := r.FormValue("delete")
+		unBlock := r.FormValue("unblock")
+		block := r.FormValue("block")
+		if name != "" {
+			db.Exec("update image_blog.Users set admin = 'yes' where username = ?", name)
+		} else if remove != "" {
+			db.Exec("update image_blog.Users set admin = 'no' where username = ?", remove)
+		} else if del != "" {
+			db.Exec("delete from  image_blog.Users where username = ?", del)
+		} else if unBlock != "" {
+			db.Exec("update image_blog.Users set retry = '0' where username = ?", unBlock)
+		} else if block != "" {
+			db.Exec("update image_blog.Users set retry = '6' where username = ?", block)
+		}
+		http.Redirect(w, r, "/users-admin", http.StatusSeeOther)
+		return
+	}
+	http.Redirect(w, r, "/users-admin", http.StatusSeeOther)
+	return
+}
+
+func addUserAdmin(w http.ResponseWriter, r *http.Request) {
+	if !loggedIn(w, r) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	c, _ := r.Cookie("session")
+	username := strings.Split(c.Value, ",")[1]
+	if !isAdmin(username) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	if r.Method == http.MethodPost {
+		r.ParseForm()
+		userName := r.FormValue("username")
+		password := r.FormValue("password")
+		admin := r.FormValue("admin")
+		if userName != "" && password != "" && admin != "" {
+			encPass, _ := bcrypt.GenerateFromPassword([]byte(password), 10)
+			strPass := string(encPass)
+			db.Exec("insert into image_blog.Users (username, password, admin) VALUES (?, ? ,?)", userName, strPass, admin)
+		}
+		http.Redirect(w, r, "/users-admin", http.StatusSeeOther)
+		return
+	}
+	SentData := &Data
+
+	tpl.ExecuteTemplate(w, "add-user-admin.gohtml", &SentData)
+	return
 }
