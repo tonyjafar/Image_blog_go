@@ -50,7 +50,7 @@
   </thead>
   <tbody>
  {{range .UsersInfo}}                       
-<tr><th scope='row'>{{.Username}}</th><td>{{.Admin}}</td><td><a class='btn btn-success' href='/edit-user?name={{.Username}}'>Make Admin<span class='glyphicon glyphicon-chevron-right'></span></a></td><td><a class='btn btn-success' href='/edit-user?unblock={{.Username}}'>Unblock User<span class='glyphicon glyphicon-chevron-right'></span></a></td><td><a class='btn btn-danger' href='/edit-user?block={{.Username}}'>Block User<span class='glyphicon glyphicon-chevron-right'></span></a></td><td><a class='btn btn-danger' href='/edit-user?remove={{.Username}}'>Remove Admin<span class='glyphicon glyphicon-chevron-right'></span></a></td><td><a class='btn btn-danger' href='/edit-user?delete={{.Username}}'>Delete User<span class='glyphicon glyphicon-chevron-right'></span></a></td></tr>
+<tr><th scope='row'>{{.Username}}</th><td>{{.Admin}}</td><td><a class='btn btn-success' href='/edit-user?name={{.Username}}'>Make Admin<span class='glyphicon glyphicon-chevron-right'></span></a></td><td><a class='btn btn-success' href='/edit-user?unblock={{.Username}}'>Unblock User<span class='glyphicon glyphicon-chevron-right'></span></a></td><td><a class='btn btn-danger' href='/edit-user?block={{.Username}}'>Block User<span class='glyphicon glyphicon-chevron-right'></span></a></td><td><a class='btn btn-danger' href='/edit-user?remove={{.Username}}'>Remove Admin<span class='glyphicon glyphicon-chevron-right'></span></a></td><td><a onclick='return confirm("Are you sure?")' class='btn btn-danger' href='/edit-user?delete={{.Username}}'>Delete User<span class='glyphicon glyphicon-chevron-right'></span></a></td></tr>
 {{end}}
 </tbody>
 </table>
