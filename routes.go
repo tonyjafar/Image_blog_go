@@ -555,7 +555,7 @@ func imagesAdmin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	query := `SELECT name,location,description, created_at FROM
-				image_blog.images
+				image_blog.images ORDER BY created_at DESC
 				`
 	rows, err := db.Query(query)
 	if err != nil {
@@ -706,7 +706,7 @@ func videosAdmin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	query := `SELECT name,location,description, created_at FROM
-				image_blog.videos
+				image_blog.videos ORDER BY created_at DESC
 				`
 	rows, err := db.Query(query)
 	if err != nil {
@@ -772,7 +772,7 @@ func videosAdminEdit(w http.ResponseWriter, r *http.Request) {
 		name := r.FormValue("name")
 		if name != "" {
 			query := `SELECT name,location,description, created_at FROM
-				image_blog.videos where name = ?
+				image_blog.videos where name = ? ORDER BY created_at DESC
 				`
 			rows, err := db.Query(query, name)
 			if err != nil {

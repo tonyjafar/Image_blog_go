@@ -50,7 +50,7 @@
   </thead>
   <tbody>
  {{range .ImagesInfo}}                       
-<tr><th scope='row'>{{.Name}}</th><td>{{.Location}}</td><td>{{.Description}}</td><td>{{.CreatedAt}}</td><td><a class='btn btn-success' href='/edit-video?name={{.Name}}'>Edit<span class='glyphicon glyphicon-chevron-right'></span></a></td><td><a class='btn btn-danger' href='/delete-video?delete={{.Name}}'>Delete<span class='glyphicon glyphicon-chevron-right'></span></a></td></tr>
+<tr><th scope='row'>{{.Name}}</th><td>{{.Location}}</td><td>{{.Description}}</td><td>{{.CreatedAt}}</td><td><a class='btn btn-success' href='/edit-video?name={{.Name}}'>Edit<span class='glyphicon glyphicon-chevron-right'></span></a></td><td><a onclick='return confirm("Are you sure?")' class='btn btn-danger' href='/delete-video?delete={{.Name}}'>Delete<span class='glyphicon glyphicon-chevron-right'></span></a></td></tr>
 {{end}}
 </tbody>
 </table>
