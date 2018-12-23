@@ -1,41 +1,52 @@
 # Image_blog_go
 ## Project Structure
 ```.
-├── assets
 ├── conf.json
 ├── data
-│   └── thumb
-├── funcs.go
-├── Image_blog_go
-├── image.go
-├── main.go
-├── README.md
-├── routes.go
+│   ├── thumb
+│   └── videos
+├── static
+│   ├── css
+│   │   └── plugins
+│   ├── font-awesome
+│   │   ├── css
+│   │   ├── fonts
+│   │   ├── less
+│   │   └── scss
+│   ├── fonts
+│   └── js
+│       └── plugins
+│           ├── flot
+│           └── morris
 └── templates
-    ├── footer.gohtml
-    ├── header.gohtml
-    ├── images.gohtml
-    ├── index.gohtml
-    ├── search.gohtml
-    ├── signin.gohtml
-    └── uplimage.gohtml
 ```
-## User Table
-id, username, password, session, retry, last_activity, admin
-, password created using golang.org/x/crypto/bcrypt
+## Users Table
+| Column Name   | Data Type    | PK | NN | UQ | AI | Default |
+| ------------- | ------------ | -- | -- | -- | -- | ------- |
+| id            | INT(11)      | Y  | Y  | N  | Y  | N       |
+| username      | VARCHAR(255) | N  | Y  | Y  | N  | N       | 
+| password      | VARCHAR(255) | N  | Y  | N  | N  | N       |
+| session       | VARCHAR(255) | N  | N  | N  | N  | NULL    |
+| retry         | INT(11)      | N  | N  | N  | N  | 0       |
+| last_activity | DATETIME     | N  | N  | N  | N  | NULL    |
+| admin         | VARCHAR(45)  | N  | N  | N  | N  | no      |
+
+### Create Initial Admin User
+create enrcypted password using the [script](https://github.com/tonyjafar/go_examples/blob/master/crypt_check_pass.go)
+then insert a new user in the DB :
 ```
-func GenerateFromPassword(password []byte, cost int) ([]byte, error) {
-	p, err := newFromPassword(password, cost)
-	if err != nil {
-		return nil, err
-	}
-	return p.Hash(), nil
-}
+INSERT INTO IMAGE_BLOG.USERS username, password, admin VALUES (<your_user>, <YOUR_ENCRYPTED_PASS>, "yes");
 ```
-converting it to string
+then you can add other users using the admin Page.
 
 ## Images and Videos Tables
-name, location, description, size, created_at
+| Column Name   | Data Type    | PK | NN | UQ | AI |
+| ------------- | ------------ | -- | -- | -- | -- |
+| name          | VARCHAR(255) | Y  | Y  | N  | N  |
+| location      | VARCHAR(255) | N  | Y  | N  | N  | 
+| description   | TEXT         | N  | Y  | N  | N  |
+| size          | INT(11)      | N  | Y  | N  | N  |
+| created_at    | DATETIME     | N  | Y  | N  | N  |
 
 ## conf.json
 ```
