@@ -1,9 +1,6 @@
 # Image_blog_go
 ## Project Structure
 ```.
-# Image_blog_go
-## Project Structure
-```.
 ├── conf.json
 ├── data
 │   ├── thumb
