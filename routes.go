@@ -24,6 +24,13 @@ func index(w http.ResponseWriter, r *http.Request) {
 		http.SetCookie(w, c)
 	}
 	if loggedIn(w, r) {
+		username := strings.Split(c.Value, ",")[1]
+		SentData.Username = username
+		if !isAdmin(username) {
+			SentData.Admin = false
+		} else {
+			SentData.Admin = true
+		}
 		SentData.Loggedin = true
 		rows, err := db.Query(
 			`
@@ -136,6 +143,13 @@ func images(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
 		return
 	}
+	username := strings.Split(c.Value, ",")[1]
+	SentData.Username = username
+	if !isAdmin(username) {
+		SentData.Admin = false
+	} else {
+		SentData.Admin = true
+	}
 	if strings.HasSuffix(r.RequestURI, ".css") {
 		w.Header().Set("Content-Type", "text/css; charset=utf-8")
 	}
@@ -210,10 +224,12 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 	c.MaxAge = cAge
 	http.SetCookie(w, c)
 	username := strings.Split(c.Value, ",")[1]
+	SentData.Username = username
 	if !isAdmin(username) {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
 		return
 	}
+	SentData.Admin = true
 	if r.Method == http.MethodPost {
 		tn := time.Now()
 		l := r.FormValue("location")
@@ -307,6 +323,13 @@ func search(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
+	username := strings.Split(c.Value, ",")[1]
+	SentData.Username = username
+	if !isAdmin(username) {
+		SentData.Admin = false
+	} else {
+		SentData.Admin = true
+	}
 	c.MaxAge = cAge
 	List := []string{}
 	SentData.Loggedin = true
@@ -381,10 +404,12 @@ func addVideo(w http.ResponseWriter, r *http.Request) {
 	c.MaxAge = cAge
 	http.SetCookie(w, c)
 	username := strings.Split(c.Value, ",")[1]
+	SentData.Username = username
 	if !isAdmin(username) {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
 		return
 	}
+	SentData.Admin = true
 	if r.Method == http.MethodPost {
 		tn := time.Now()
 		l := r.FormValue("location")
@@ -467,6 +492,13 @@ func videos(w http.ResponseWriter, r *http.Request) {
 	List := []string{}
 	c.MaxAge = cAge
 	http.SetCookie(w, c)
+	username := strings.Split(c.Value, ",")[1]
+	SentData.Username = username
+	if !isAdmin(username) {
+		SentData.Admin = false
+	} else {
+		SentData.Admin = true
+	}
 	SentData.Loggedin = true
 	rows, err := db.Query(
 		`
@@ -507,6 +539,7 @@ func admin(w http.ResponseWriter, r *http.Request) {
 	}
 	SentData := &Data
 	SentData.Admin = true
+	SentData.Username = username
 	var imageCount, videoCount, userCount, blockedUser string
 	db.QueryRow("select count(*) from image_blog.images").Scan(&imageCount)
 	db.QueryRow("select count(*) from image_blog.videos").Scan(&videoCount)
@@ -532,6 +565,7 @@ func imagesAdmin(w http.ResponseWriter, r *http.Request) {
 	}
 	SentData := &Data
 	SentData.Admin = true
+	SentData.Username = username
 	if r.Method == http.MethodPost {
 		List := []Images{}
 		r.ParseForm()
@@ -592,11 +626,14 @@ func imagesAdminDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	c, _ := r.Cookie("session")
+	SentData := &Data
 	username := strings.Split(c.Value, ",")[1]
 	if !isAdmin(username) {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
 		return
 	}
+	SentData.Username = username
+	SentData.Admin = true
 	if r.Method == http.MethodGet {
 		r.ParseForm()
 		name := r.FormValue("delete")
@@ -622,6 +659,8 @@ func imagesAdminEdit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	SentData := &Data
+	SentData.Admin = true
+	SentData.Username = username
 	if r.Method == http.MethodGet {
 
 		r.ParseForm()
@@ -683,6 +722,7 @@ func videosAdmin(w http.ResponseWriter, r *http.Request) {
 	}
 	SentData := &Data
 	SentData.Admin = true
+	SentData.Username = username
 	if r.Method == http.MethodPost {
 		List := []Images{}
 		r.ParseForm()
@@ -748,6 +788,9 @@ func videosAdminDelete(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
 		return
 	}
+	SentData := &Data
+	SentData.Admin = true
+	SentData.Username = username
 	if r.Method == http.MethodGet {
 		r.ParseForm()
 		name := r.FormValue("delete")
@@ -773,6 +816,8 @@ func videosAdminEdit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	SentData := &Data
+	SentData.Admin = true
+	SentData.Username = username
 	if r.Method == http.MethodGet {
 
 		r.ParseForm()
@@ -899,6 +944,8 @@ func usersAdminChange(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
 		return
 	}
+	SentData := &Data
+	SentData.Admin = true
 	if r.Method == http.MethodGet {
 		r.ParseForm()
 		name := r.FormValue("name")
@@ -935,6 +982,8 @@ func addUserAdmin(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
 		return
 	}
+	SentData := &Data
+	SentData.Admin = true
 	if r.Method == http.MethodPost {
 		r.ParseForm()
 		userName := r.FormValue("username")
@@ -948,7 +997,6 @@ func addUserAdmin(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/users-admin", http.StatusSeeOther)
 		return
 	}
-	SentData := &Data
 
 	tpl.ExecuteTemplate(w, "add-user-admin.gohtml", &SentData)
 	return
