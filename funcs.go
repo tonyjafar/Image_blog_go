@@ -21,8 +21,10 @@ var parms struct {
 }
 
 func loggedIn(w http.ResponseWriter, r *http.Request) bool {
+	SentData := &Data
 	c, err := r.Cookie("session")
 	if err != nil {
+		SentData.Loggedin = false
 		return false
 	}
 	var session string
@@ -30,9 +32,11 @@ func loggedIn(w http.ResponseWriter, r *http.Request) bool {
 	cookieSession := strings.Split(c.Value, ",")[0]
 	dbSession := db.QueryRow("select session from image_blog.Users where username = ?", username).Scan(&session)
 	if dbSession != nil {
+		SentData.Loggedin = false
 		return false
 	}
 	if cookieSession != session {
+		SentData.Loggedin = false
 		return false
 	}
 	db.Exec(
@@ -42,6 +46,7 @@ func loggedIn(w http.ResponseWriter, r *http.Request) bool {
 		time.Now(),
 		username,
 	)
+	SentData.Loggedin = true
 	return true
 }
 

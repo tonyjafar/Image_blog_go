@@ -22,8 +22,6 @@ func index(w http.ResponseWriter, r *http.Request) {
 	if err == nil {
 		c.MaxAge = cAge
 		http.SetCookie(w, c)
-	}
-	if loggedIn(w, r) {
 		username := strings.Split(c.Value, ",")[1]
 		SentData.Username = username
 		if !isAdmin(username) {
@@ -31,7 +29,10 @@ func index(w http.ResponseWriter, r *http.Request) {
 		} else {
 			SentData.Admin = true
 		}
-		SentData.Loggedin = true
+	} else {
+		SentData.Admin = false
+	}
+	if loggedIn(w, r) {
 		rows, err := db.Query(
 			`
 			SELECT name FROM
@@ -54,8 +55,6 @@ LIMIT 6
 			List = append(List, name)
 		}
 		SentData.List = List
-	} else {
-		SentData.Loggedin = false
 	}
 	tpl.ExecuteTemplate(w, "index.gohtml", SentData)
 }
