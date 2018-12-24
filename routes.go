@@ -878,6 +878,7 @@ func usersAdmin(w http.ResponseWriter, r *http.Request) {
 	}
 	SentData := &Data
 	SentData.Admin = true
+	SentData.Username = username
 	if r.Method == http.MethodPost {
 		List := []Users{}
 		r.ParseForm()
@@ -945,6 +946,7 @@ func usersAdminChange(w http.ResponseWriter, r *http.Request) {
 	}
 	SentData := &Data
 	SentData.Admin = true
+	SentData.Username = username
 	if r.Method == http.MethodGet {
 		r.ParseForm()
 		name := r.FormValue("name")
@@ -983,6 +985,7 @@ func addUserAdmin(w http.ResponseWriter, r *http.Request) {
 	}
 	SentData := &Data
 	SentData.Admin = true
+	SentData.Username = username
 	if r.Method == http.MethodPost {
 		r.ParseForm()
 		userName := r.FormValue("username")
