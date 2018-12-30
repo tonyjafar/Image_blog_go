@@ -987,15 +987,27 @@ func addUserAdmin(w http.ResponseWriter, r *http.Request) {
 	SentData.Admin = true
 	SentData.Username = username
 	if r.Method == http.MethodPost {
+		SentData.PassError.IsError = false
+		SentData.PassError.IsSucc = false
 		r.ParseForm()
 		userName := r.FormValue("username")
 		password := r.FormValue("password")
 		admin := r.FormValue("admin")
 		if userName != "" && password != "" && admin != "" {
+			check, err := passPolicy(password)
+			if !check {
+				SentData.PassError.IsError = true
+				SentData.PassError.IsSucc = false
+				SentData.PassError.ErrorType = err
+				tpl.ExecuteTemplate(w, "add-user-admin.gohtml", &SentData)
+				return
+			}
 			encPass, _ := bcrypt.GenerateFromPassword([]byte(password), 10)
 			strPass := string(encPass)
 			db.Exec("insert into image_blog.Users (username, password, admin) VALUES (?, ? ,?)", userName, strPass, admin)
 		}
+		SentData.PassError.IsError = false
+		SentData.PassError.IsSucc = true
 		http.Redirect(w, r, "/users-admin", http.StatusSeeOther)
 		return
 	}

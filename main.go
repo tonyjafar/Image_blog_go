@@ -36,6 +36,13 @@ var Data struct {
 	Statics    AdminStatics
 	ImagesInfo []Images
 	UsersInfo  []Users
+	PassError  PassErrors
+}
+
+type PassErrors struct {
+	IsError   bool
+	ErrorType string
+	IsSucc    bool
 }
 
 type Images struct {
