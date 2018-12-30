@@ -46,5 +46,12 @@
             </div>
             </div>
         <br><br>
+        	{{if .PassError.IsError}}
+	<br>
+<br>
+	<div class="alert alert-danger">
+  <strong>Error!:</strong> {{.PassError.ErrorType}}.
+</div>
+	{{end}}
 </div>
 {{template "footer-admin" .}}

@@ -238,3 +238,26 @@ func isAdmin(u string) bool {
 	}
 	return true
 }
+
+func passPolicy(p string) (bool, string) {
+	if len(p) < 6 {
+		return false, "Password must be at least 6 charachters long"
+	}
+	checkSmallLetters, _ := regexp.MatchString("[a-z]", p)
+	if !checkSmallLetters {
+		return checkSmallLetters, "Password must contain at least one small letter"
+	}
+	checkCapLetters, _ := regexp.MatchString("[A-Z]", p)
+	if !checkCapLetters {
+		return checkCapLetters, "Password must contain at least one capital letter"
+	}
+	checkNonChar, _ := regexp.MatchString("\\W", p)
+	if !checkNonChar {
+		return checkNonChar, "Password must contain at least one special letter"
+	}
+	checkNum, _ := regexp.MatchString("[0-9]", p)
+	if !checkNum {
+		return checkNum, "Password must contain at least one number"
+	}
+	return true, "Sucess"
+}
