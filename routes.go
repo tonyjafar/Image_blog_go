@@ -986,9 +986,9 @@ func addUserAdmin(w http.ResponseWriter, r *http.Request) {
 	SentData := &Data
 	SentData.Admin = true
 	SentData.Username = username
+	SentData.PassError.IsError = false
+	SentData.PassError.IsSucc = false
 	if r.Method == http.MethodPost {
-		SentData.PassError.IsError = false
-		SentData.PassError.IsSucc = false
 		r.ParseForm()
 		userName := r.FormValue("username")
 		password := r.FormValue("password")
