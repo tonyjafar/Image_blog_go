@@ -994,7 +994,7 @@ func addUserAdmin(w http.ResponseWriter, r *http.Request) {
 		password := r.FormValue("password")
 		admin := r.FormValue("admin")
 		if userName != "" && password != "" && admin != "" {
-			check, err := passPolicy(password)
+			check, err := passPolicy(userName, password)
 			if !check {
 				SentData.PassError.IsError = true
 				SentData.PassError.IsSucc = false

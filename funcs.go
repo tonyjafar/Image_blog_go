@@ -239,7 +239,12 @@ func isAdmin(u string) bool {
 	return true
 }
 
-func passPolicy(p string) (bool, string) {
+func passPolicy(u, p string) (bool, string) {
+	var newUsername string
+	db.QueryRow("select username from image_blog.Users where username = ?", u).Scan(&newUsername)
+	if newUsername != "" {
+		return false, "Username is already taken"
+	}
 	if len(p) < 6 {
 		return false, "Password must be at least 6 charachters long"
 	}
