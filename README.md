@@ -35,7 +35,7 @@
 create enrcypted password using the [script](https://github.com/tonyjafar/go_examples/blob/master/crypt_check_pass.go)
 then insert a new user in the DB :
 ```
-INSERT INTO IMAGE_BLOG.USERS username, password, admin VALUES (<your_user>, <YOUR_ENCRYPTED_PASS>, "yes");
+INSERT INTO IMAGE_BLOG.USERS (username, password, admin) VALUES (<your_user>, <YOUR_ENCRYPTED_PASS>, "yes");
 ```
 then you can add other users using the admin Page.
 
