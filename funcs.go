@@ -37,10 +37,6 @@ func loggedIn(w http.ResponseWriter, r *http.Request) bool {
 	}
 	if cookieSession != session {
 		SentData.Loggedin = false
-		blocked, _ := getAndUpdateRetry(username)
-		if blocked {
-			return false
-		}
 		return false
 	}
 	db.Exec(
