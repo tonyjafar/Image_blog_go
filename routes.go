@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/disintegration/imaging"
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -1005,6 +1005,12 @@ func addUserAdmin(w http.ResponseWriter, r *http.Request) {
 			encPass, _ := bcrypt.GenerateFromPassword([]byte(password), 10)
 			strPass := string(encPass)
 			db.Exec("insert into image_blog.Users (username, password, admin) VALUES (?, ? ,?)", userName, strPass, admin)
+		} else {
+			SentData.PassError.IsError = true
+			SentData.PassError.IsSucc = false
+			SentData.PassError.ErrorType = "Please fill on all infos"
+			tpl.ExecuteTemplate(w, "add-user-admin.gohtml", &SentData)
+			return
 		}
 		SentData.PassError.IsError = false
 		SentData.PassError.IsSucc = true

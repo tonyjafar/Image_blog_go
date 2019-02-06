@@ -55,11 +55,14 @@ func lastActivity() {
 	timeFormat := "2006-01-02 15:04:05"
 	var username string
 	var lastActivityTime string
-	allUsers, _ := db.Query("select username, last_activity from image_blog.Users where session is NOT NULL")
+	allUsers, err := db.Query("select username, last_activity from image_blog.Users where session is NOT NULL")
+	if err != nil {
+		log.Error(err.Error())
+	}
 	for allUsers.Next() {
 		err := allUsers.Scan(&username, &lastActivityTime)
 		if err != nil {
-			fmt.Println(err)
+			log.Fatal(err.Error())
 			return
 		}
 		sessionTime, err := time.Parse(timeFormat, lastActivityTime)
