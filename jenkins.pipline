@@ -1,0 +1,20 @@
+pipeline{
+    agent {label 'linux'}
+    stages{
+        stage('source'){
+            steps{
+                git 'https://github.com/tonyjafar/Image_blog_go.git'
+            }
+        }
+        stage('build'){
+            steps{
+                sh 'export GOROOT=/usr/local/go && export GOPATH=/usr/local/go/bin && export PATH=$GOPATH/bin:$GOROOT/bin:$PATH && go build'
+            }
+        }
+        stage('get_files'){
+            steps{
+                archiveArtifacts artifacts: '**/*', excludes: '*.go'
+            }
+        }
+    }
+}
