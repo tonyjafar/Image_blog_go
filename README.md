@@ -39,6 +39,8 @@ INSERT INTO IMAGE_BLOG.USERS (username, password, admin) VALUES (<your_user>, <Y
 ```
 then you can add other users using the admin Page.
 
+Or you can use the template.sql to import Sample DB with default admin user with password 'Admin1!'
+
 ## Images and Videos Tables
 | Column Name   | Data Type    | PK | NN | UQ | AI |
 | ------------- | ------------ | -- | -- | -- | -- |
@@ -58,4 +60,16 @@ then you can add other users using the admin Page.
     "database": "image_blog"
     
 }
+```
+
+## Steps to start the Server:
+
+```
+$ cd Image_blog_go
+$ mkdir -p data/thump && mkdir data/videos
+$ mysql -u $USER -p < template.sql
+$ touch conf.json && vim conf.json
+$ go build
+$ ./Image_blog_go
+
 ```
