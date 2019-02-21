@@ -65,11 +65,13 @@ Or you can use the template.sql to import Sample DB with default admin user with
 ## Steps to start the Server:
 
 ```
+$ git clone https://github.com/tonyjafar/Image_blog_go.git
 $ cd Image_blog_go
-$ mkdir -p data/thump && mkdir data/videos
+$ mkdir -p data/thumb && mkdir data/videos
 $ mysql -u $USER -p < template.sql
 $ touch conf.json && vim conf.json
 $ go build
 $ ./Image_blog_go
 
 ```
+then you can access ther server in browser http://localhost:8000
