@@ -65,6 +65,11 @@ Or you can use the template.sql to import Sample DB with default admin user with
 ## Steps to start the Server:
 
 ```
+$ go get github.com/go-sql-driver/mysql
+$ go get github.com/op/go-logging
+$ go get github.com/disintegration/imaging
+$ go get github.com/satori/go.uuid
+$ go get golang.org/x/crypto/bcrypt
 $ git clone https://github.com/tonyjafar/Image_blog_go.git
 $ cd Image_blog_go
 $ mkdir -p data/thumb && mkdir data/videos
