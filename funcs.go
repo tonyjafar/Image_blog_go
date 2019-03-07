@@ -10,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/graphql-go/graphql"
 )
 
 var parms struct {
@@ -18,6 +20,131 @@ var parms struct {
 	Ipaddress string
 	Port      string
 	Database  string
+}
+
+type ImageInfo struct {
+	Name        string `json:"name"`
+	Location    string `json:"location"`
+	Description string `json:"description"`
+	Size        string `json:"size"`
+	Created_at  string `json:"created_at"`
+}
+
+var ImageInfos []ImageInfo
+
+var imageType = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "Image",
+		Fields: graphql.Fields{
+			"name": &graphql.Field{
+				Type: graphql.String,
+			},
+			"location": &graphql.Field{
+				Type: graphql.String,
+			},
+			"description": &graphql.Field{
+				Type: graphql.String,
+			},
+			"size": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"created_at": &graphql.Field{
+				Type: graphql.String,
+			},
+		},
+	},
+)
+
+var queryType = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "Query",
+		Fields: graphql.Fields{
+			/* Get (read) single image by name
+			   http://localhost:8000/info?query={image(name:"name"){name,description,created_at}}
+			*/
+			"image": &graphql.Field{
+				Type:        imageType,
+				Description: "Get image by name",
+				Args: graphql.FieldConfigArgument{
+					"name": &graphql.ArgumentConfig{
+						Type: graphql.String,
+					},
+				},
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					name, ok := p.Args["name"].(string)
+					if ok {
+						// Find product
+						for _, image := range ImageInfos {
+							if string(image.Name) == name {
+								return image, nil
+							}
+						}
+					}
+					return nil, nil
+				},
+			},
+			/* Get (read) image list
+			   http://localhost:8000/info?query={list{name,description,created_at}}
+			*/
+			"list": &graphql.Field{
+				Type:        graphql.NewList(imageType),
+				Description: "Get images list",
+				Resolve: func(params graphql.ResolveParams) (interface{}, error) {
+					return ImageInfos, nil
+				},
+			},
+		},
+	})
+
+var mutationType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "Mutation",
+	Fields: graphql.Fields{
+		/* Delete Image by name
+		   http://localhost:8080/info?query=mutation+_{delete(name:"name"){name,description,created_at}}
+		*/
+		"delete": &graphql.Field{
+			Type:        imageType,
+			Description: "Delete image by name",
+			Args: graphql.FieldConfigArgument{
+				"name": &graphql.ArgumentConfig{
+					Type: graphql.NewNonNull(graphql.String),
+				},
+			},
+			Resolve: func(params graphql.ResolveParams) (interface{}, error) {
+				name, _ := params.Args["name"].(string)
+				image := ImageInfo{}
+				for i, p := range ImageInfos {
+					if name == p.Name {
+						image = ImageInfos[i]
+						// Remove from DB
+						db.Exec("delete from image_blog.images where name = ?", name)
+					}
+				}
+
+				return image, nil
+			},
+		},
+	},
+})
+
+var schema, _ = graphql.NewSchema(
+	graphql.SchemaConfig{
+		Query:    queryType,
+		Mutation: mutationType,
+	},
+)
+
+func executeQuery(w http.ResponseWriter, query string, schema graphql.Schema) *graphql.Result {
+	result := graphql.Do(graphql.Params{
+		Schema:        schema,
+		RequestString: query,
+	})
+	if len(result.Errors) > 0 {
+		log.Errorf("errors: %v", result.Errors)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("400 - Bad Request!\n"))
+	}
+	return result
 }
 
 func loggedIn(w http.ResponseWriter, r *http.Request) bool {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/sha1"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -1020,4 +1021,40 @@ func addUserAdmin(w http.ResponseWriter, r *http.Request) {
 
 	tpl.ExecuteTemplate(w, "add-user-admin.gohtml", &SentData)
 	return
+}
+
+func getInfo(w http.ResponseWriter, r *http.Request) {
+	if !loggedIn(w, r) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	c, _ := r.Cookie("session")
+	username := strings.Split(c.Value, ",")[1]
+	if !isAdmin(username) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	ImageInfos = []ImageInfo{}
+	rows, err := db.Query(
+		`
+		SELECT name,location,description,size,created_at FROM
+image_blog.images
+ORDER BY created_at DESC
+		`,
+	)
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
+	var name, location, description, size, created_at string
+	for rows.Next() {
+		err := rows.Scan(&name, &location, &description, &size, &created_at)
+		if err != nil {
+			log.Error(err.Error())
+			return
+		}
+		ImageInfos = append(ImageInfos, ImageInfo{name, location, description, size, created_at})
+	}
+	result := executeQuery(w, r.URL.Query().Get("query"), schema)
+	json.NewEncoder(w).Encode(result)
 }
