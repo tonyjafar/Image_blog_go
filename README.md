@@ -65,6 +65,8 @@ Or you can use the template.sql to import Sample DB with default admin user with
 ## Steps to start the Server:
 
 ```
+# Prerequist "mysql DB" and "GOlang"
+$ go get github.com/graphql-go/graphql
 $ go get github.com/go-sql-driver/mysql
 $ go get github.com/op/go-logging
 $ go get github.com/disintegration/imaging
