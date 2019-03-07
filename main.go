@@ -130,6 +130,7 @@ func main() {
 	http.HandleFunc("/users-admin", usersAdmin)
 	http.HandleFunc("/edit-user", usersAdminChange)
 	http.HandleFunc("/add-user", addUserAdmin)
+	http.HandleFunc("/info", getInfo)
 	go lastActivity()
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }
