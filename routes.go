@@ -37,9 +37,9 @@ func index(w http.ResponseWriter, r *http.Request) {
 		rows, err := db.Query(
 			`
 			SELECT name FROM
-    image_blog.images
-ORDER BY created_at DESC
-LIMIT 6
+			image_blog.images
+			ORDER BY created_at DESC
+			LIMIT 6
 			`,
 		)
 		if err != nil {
@@ -160,8 +160,8 @@ func images(w http.ResponseWriter, r *http.Request) {
 	rows, err := db.Query(
 		`
 		SELECT name FROM
-image_blog.images
-ORDER BY created_at DESC
+		image_blog.images
+		ORDER BY created_at DESC
 		`,
 	)
 	if err != nil {
@@ -503,8 +503,8 @@ func videos(w http.ResponseWriter, r *http.Request) {
 	rows, err := db.Query(
 		`
 		SELECT name FROM
-image_blog.videos
-ORDER BY created_at DESC
+		image_blog.videos
+		ORDER BY created_at DESC
 		`,
 	)
 	if err != nil {
@@ -1038,8 +1038,8 @@ func getInfo(w http.ResponseWriter, r *http.Request) {
 	rows, err := db.Query(
 		`
 		SELECT name,location,description,size,created_at FROM
-image_blog.images
-ORDER BY created_at DESC
+		image_blog.images
+		ORDER BY created_at DESC
 		`,
 	)
 	if err != nil {
