@@ -1058,3 +1058,35 @@ func getInfo(w http.ResponseWriter, r *http.Request) {
 	result := executeQuery(w, r.URL.Query().Get("query"), schema)
 	json.NewEncoder(w).Encode(result)
 }
+
+func getScharbelTime(w http.ResponseWriter, r *http.Request) {
+	if !loggedIn(w, r) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	c, _ := r.Cookie("session")
+	username := strings.Split(c.Value, ",")[1]
+	if !isAdmin(username) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	SentData := &Data
+	timeFormat := "2006-01-02 15:04:05 CET"
+	scharbelTime := "2019-03-05 09:50:00 CET"
+	loc, _ := time.LoadLocation("Europe/Berlin")
+	parseTime, _ := time.ParseInLocation(timeFormat, scharbelTime, loc)
+	getSeconds := int(time.Since(parseTime).Seconds())
+	SentData.Scharbel.Years = getSeconds / 31557600
+	SentData.Scharbel.Months = (getSeconds % 31557600) / 2592000
+	SentData.Scharbel.Days = (getSeconds % 2592000) / 86400
+	SentData.Scharbel.Hours = (getSeconds % 86400) / 3600
+	SentData.Scharbel.Minutes = (getSeconds % 3600) / 60
+	SentData.Scharbel.Seconds = (getSeconds % 3600) % 60
+	if r.Method == http.MethodPost {
+		tpl.ExecuteTemplate(w, "scharbel.gohtml", &SentData)
+		return
+	}
+	tpl.ExecuteTemplate(w, "scharbel.gohtml", &SentData)
+	return
+
+}

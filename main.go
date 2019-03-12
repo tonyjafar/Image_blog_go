@@ -37,6 +37,16 @@ var Data struct {
 	ImagesInfo []Images
 	UsersInfo  []Users
 	PassError  PassErrors
+	Scharbel   ScharbelTime
+}
+
+type ScharbelTime struct {
+	Years   int
+	Months  int
+	Days    int
+	Hours   int
+	Minutes int
+	Seconds int
 }
 
 type PassErrors struct {
@@ -131,6 +141,7 @@ func main() {
 	http.HandleFunc("/edit-user", usersAdminChange)
 	http.HandleFunc("/add-user", addUserAdmin)
 	http.HandleFunc("/info", getInfo)
+	http.HandleFunc("/scharbel", getScharbelTime)
 	go lastActivity()
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }
