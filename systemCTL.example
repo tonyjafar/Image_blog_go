@@ -1,0 +1,11 @@
+[Unit]
+Description=blog Service
+After=network.target mysql.service
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/my_blog/
+ExecStart=/home/ubuntu/my_blog/Image_blog_go
+Restart=on-abort
+[Install]
+WantedBy=multi-user.target
