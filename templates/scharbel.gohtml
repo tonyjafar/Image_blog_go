@@ -11,8 +11,16 @@
 <h3> Hours: {{ .Scharbel.Hours }} </h3>
 <h3> Minutes: {{ .Scharbel.Minutes }} </h3>
 <h3> Seconds: {{ .Scharbel.Seconds }} </h3>
-<a class="btn btn-info" href="/scharbel">Update</a>
+<a id="getIt" class="btn btn-info" href="/scharbel" hidden="hidden">Update</a>
 <br>
 <br>
 </div>
+<script type="text/javascript">
+   var auto_refresh = setInterval(
+      function ()
+      {
+         document.getElementById("getIt").click();
+      }, 1000); // refresh every 10000 milliseconds
+</script>
+
 {{template "footer"}}
