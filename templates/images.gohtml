@@ -52,9 +52,9 @@ $(document).on('click', '[data-toggle="lightbox"]', function(event) {
 <script>
 $(document).on('click', '[data-toggle="lightbox"]', function(event) {
     var e = $.Event('keydown', { keyCode: 39 });// right arrow key
-    setInterval(function() {
+    setTimeout(setInterval(function() {
     $(document).trigger(e);
-             }, 5000);
+             }, 5000), 3000);
 });
 </script>
 {{template "footer"}}
