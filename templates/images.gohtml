@@ -12,7 +12,7 @@
 <div class="col-md-8">
 <div class="row">
 {{range .MyVar.ListMem}}
-<a href="/assets/{{.}}"  data-toggle="lightbox" data-gallery="my-gal" class="col-sm-4"><img src="/assets/thumb/{{.}}" class="img-fluid rounded-circle"></a>
+<a href="/assets/{{.}}" data-toggle="lightbox" data-gallery="my-gal"  class="col-sm-4"><img src="/assets/thumb/{{.}}" class="img-fluid rounded-circle" ></a>
 {{end}}
 <br><br>
 </div>
@@ -37,17 +37,24 @@ $(document).on('click', '[data-toggle="lightbox"]', function(event) {
    showArrows: false,
  onShow: function() {
   $('.ekko-lightbox-container').append('<div class="rotate-button"><a href="#" class="pull-right rotate" style="font-size: 18px;padding: 3px 0;"><i class="fa fa-repeat" aria-hidden="true"></i> Rotate</a></div>')
-
   var degrees = 0;
   $('.rotate').bind('click', function(event) {
     event.preventDefault();
     var $lightboxphoto = $('.ekko-lightbox').children().find('img');
     degrees += 90;
     $lightboxphoto.css('-ms-transform', 'rotate(' + degrees + 'deg)');
-    $lightboxphoto.css('-webkit-transform', 'rotate(' + degrees + 'deg)');    
+    $lightboxphoto.css('-webkit-transform', 'rotate(' + degrees + 'deg)'); 
   });
 },
 });
+});
+</script>
+<script>
+$(document).on('click', '[data-toggle="lightbox"]', function(event) {
+    var e = $.Event('keydown', { keyCode: 39 });// right arrow key
+    setInterval(function() {
+    $(document).trigger(e);
+             }, 5000);
 });
 </script>
 {{template "footer"}}

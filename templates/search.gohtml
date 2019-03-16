@@ -75,6 +75,14 @@ $(document).on('click', '[data-toggle="lightbox"]', function(event) {
 });
 });
 </script>
+<script>
+$(document).on('click', '[data-toggle="lightbox"]', function(event) {
+    var e = $.Event('keydown', { keyCode: 39 });// right arrow key
+    setInterval(function() {
+    $(document).trigger(e);
+             }, 5000);
+});
+</script>
 <br><br><br>
 <div class="container">
 <div class="col-md-8">
