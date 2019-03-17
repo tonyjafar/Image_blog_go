@@ -28,7 +28,9 @@
 {{ $i := index .MyVar.ImVi 0 }}
 {{if gt .MyVar.ListLength 0}}
 <a class="btn btn-info" href="/search?search={{.MyVar.Search}}&optradio={{$i}}&all">View Them All</a>
+{{ if eq  $i "image"}}
 <a class="btn btn-info" href="/search?search={{.MyVar.Search}}&optradio={{$i}}&slide=true&all">Activate Slide Show</a>
+{{end}}
 <br><br>
 {{end}}
 <div class="col-md-8">
