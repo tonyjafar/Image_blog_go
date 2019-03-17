@@ -28,6 +28,7 @@
 {{ $i := index .MyVar.ImVi 0 }}
 {{if gt .MyVar.ListLength 0}}
 <a class="btn btn-info" href="/search?search={{.MyVar.Search}}&optradio={{$i}}&all">View Them All</a>
+<a class="btn btn-info" href="/search?search={{.MyVar.Search}}&optradio={{$i}}&slide=true&all">Activate Slide Show</a>
 <br><br>
 {{end}}
 <div class="col-md-8">
@@ -75,6 +76,7 @@ $(document).on('click', '[data-toggle="lightbox"]', function(event) {
 });
 });
 </script>
+{{ if .MyVar.Slide }}
 <script>
 $(document).on('click', '[data-toggle="lightbox"]', function(event) {
     var e = $.Event('keydown', { keyCode: 39 });// right arrow key
@@ -83,6 +85,7 @@ $(document).on('click', '[data-toggle="lightbox"]', function(event) {
              }, 5000), 3000);
 });
 </script>
+{{ end }}
 <br><br><br>
 <div class="container">
 <div class="col-md-8">
