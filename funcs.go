@@ -244,6 +244,7 @@ type SentVars struct {
 	ListEnd    int
 	Search     string
 	ImVi       []string
+	Slide      bool
 }
 
 var imageSlice = 30
@@ -260,8 +261,14 @@ func pageIt(w http.ResponseWriter, s *SentVars, r *http.Request, l []string, v b
 	page := r.FormValue("page")
 	s.Search = r.FormValue("search")
 	s.ImVi = r.Form["optradio"]
+	slide := r.FormValue("slide")
 	if len(s.ImVi) == 0 {
 		s.ImVi = append(s.ImVi, "image")
+	}
+	if slide == "true" {
+		s.Slide = true
+	} else {
+		s.Slide = false
 	}
 	if strings.Contains(r.RequestURI, "page") && (!strings.HasSuffix(r.RequestURI, "page=1")) {
 		s.PageNumber, err = strconv.Atoi(page)

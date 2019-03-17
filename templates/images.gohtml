@@ -7,6 +7,8 @@
 <div class="container">
 <h3>{{.MyVar.ListLength}} Images</h3>
 <a class="btn btn-info" href="/images?all">View All Images</a>
+<a class="btn btn-info" href="/images?slide=true&page={{.MyVar.PageNumber}}">Activate Slide Show for current page</a>
+<a class="btn btn-info" href="/images?slide=true&all">Activate Slide Show for all page</a>
 <br>
 <br>
 <div class="col-md-8">
@@ -49,6 +51,7 @@ $(document).on('click', '[data-toggle="lightbox"]', function(event) {
 });
 });
 </script>
+{{ if .MyVar.Slide }}
 <script>
 $(document).on('click', '[data-toggle="lightbox"]', function(event) {
     var e = $.Event('keydown', { keyCode: 39 });// right arrow key
@@ -57,4 +60,5 @@ $(document).on('click', '[data-toggle="lightbox"]', function(event) {
              }, 5000), 3000);
 });
 </script>
+{{ end }}
 {{template "footer"}}
