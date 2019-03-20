@@ -2,11 +2,15 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -130,7 +134,8 @@ func TestAddImage(t *testing.T) {
 		"location":    "test",
 		"description": "test upload",
 	}
-	req, writer, err := newfileUploadRequest("/add_image", extraParams, "nf", "/Users/tony/Desktop/test-product-test.png")
+	req, writer, err := newfileUploadRequest(
+		"/add_image", extraParams, "nf", "./test_image/test-product-test.png")
 	if err != nil {
 		t.Fatal(err.Error())
 	}
@@ -145,8 +150,176 @@ func TestAddImage(t *testing.T) {
 	req.AddCookie(c)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	handler.ServeHTTP(res, req)
+	var myImage string
+	dbError := db.QueryRow("select name from image_blog.images where description=?", extraParams["description"]).Scan(&myImage)
+	if myImage == "" || dbError != nil {
+		if dbError != nil {
+			fmt.Println(dbError.Error())
+		}
+		t.Error("Image not added to DB")
+	}
 	if status := res.Code; status != http.StatusOK {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusOK)
+	}
+	req2, writer2, err2 := newfileUploadRequest("/add_image", extraParams, "nf", "./test_image/test.txt")
+	if err2 != nil {
+		t.Fatal(err2.Error())
+	}
+	req2.AddCookie(c)
+	req2.Header.Set("Content-Type", writer2.FormDataContentType())
+	handler.ServeHTTP(res, req2)
+	if !Data.ErrorFile.IsError {
+		t.Error("Should return true")
+	}
+}
+
+func TestInfoQuery(t *testing.T) {
+	cookieToSet := "XXX,admin"
+	var myImage string
+	db.QueryRow("select name from image_blog.images where description=\"test upload\"").Scan(&myImage)
+	if myImage == "" {
+		t.Error("Image not Found - Could not Continue")
+	}
+	req, err := http.NewRequest("GET", "/info?query={image(name:\""+myImage+"\"){name,description,created_at}}", nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	res := httptest.NewRecorder()
+
+	handler := http.HandlerFunc(getInfo)
+	c := &http.Cookie{
+		Name:   "session",
+		Value:  cookieToSet,
+		MaxAge: cAge,
+	}
+	req.AddCookie(c)
+	handler.ServeHTTP(res, req)
+	var responsJson struct {
+		Data struct {
+			Image struct {
+				CreatedAt   string `json:"created_at"`
+				Description string `json:"description"`
+				Name        string `json:"name"`
+			} `json:"image"`
+		} `json:"data"`
+	}
+	fb, err := ioutil.ReadAll(res.Body)
+	j := json.Unmarshal(fb, &responsJson)
+	if j != nil {
+		t.Error(j.Error())
+	}
+	if responsJson.Data.Image.Name != myImage {
+		t.Errorf("Expect to delete %s but delete %s", myImage, responsJson.Data.Image.Name)
+	}
+
+}
+
+func TestSearch(t *testing.T) {
+	cookieToSet := "XXX,admin"
+	form := url.Values{}
+	form.Add("search", "test upload")
+	req, err := http.NewRequest("POST", "/search", strings.NewReader(form.Encode()))
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	res := httptest.NewRecorder()
+
+	handler := http.HandlerFunc(search)
+	c := &http.Cookie{
+		Name:   "session",
+		Value:  cookieToSet,
+		MaxAge: cAge,
+	}
+	req.AddCookie(c)
+	req.Form = form
+	handler.ServeHTTP(res, req)
+	if status := res.Code; status != http.StatusOK {
+		t.Errorf("handler returned wrong status code: got %v want %v",
+			status, http.StatusOK)
+	}
+	if len(Data.List) != 1 {
+		t.Errorf("List length should be 2 but get %v", len(Data.List))
+	}
+	var myImage string
+	db.QueryRow("select name from image_blog.images where description=\"test upload\"").Scan(&myImage)
+	if Data.List[0] != myImage {
+		t.Errorf("getting %s but expected %s", Data.List[0], myImage)
+	}
+
+}
+
+func TestInfoDelete(t *testing.T) {
+	cookieToSet := "XXX,admin"
+	var myImage string
+	db.QueryRow("select name from image_blog.images where description=\"test upload\"").Scan(&myImage)
+	if myImage == "" {
+		t.Error("Image not Found - Could not Continue")
+	}
+	req, err := http.NewRequest("GET", "/info?query=mutation+_{delete(name:\""+myImage+"\"){name,description,created_at}}", nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	res := httptest.NewRecorder()
+
+	handler := http.HandlerFunc(getInfo)
+	c := &http.Cookie{
+		Name:   "session",
+		Value:  cookieToSet,
+		MaxAge: cAge,
+	}
+	req.AddCookie(c)
+	handler.ServeHTTP(res, req)
+	var checkImage string
+	db.QueryRow("select name from image_blog.images where description=\"test upload\"").Scan(&checkImage)
+	if checkImage != "" {
+		t.Error("Image not Deleted")
+	}
+	var responsJson struct {
+		Data struct {
+			Delete struct {
+				CreatedAt   string `json:"created_at"`
+				Description string `json:"description"`
+				Name        string `json:"name"`
+			} `json:"delete"`
+		} `json:"data"`
+	}
+	fb, err := ioutil.ReadAll(res.Body)
+	j := json.Unmarshal(fb, &responsJson)
+	if j != nil {
+		t.Error(j.Error())
+	}
+	if responsJson.Data.Delete.Name != myImage {
+		t.Errorf("Expect to delete %s but delete %s", myImage, responsJson.Data.Delete.Name)
+	}
+}
+
+func TestSignout(t *testing.T) {
+	cookieToSet := "XXX,admin"
+	req, err := http.NewRequest("GET", "/signout", nil)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+	res := httptest.NewRecorder()
+
+	handler := http.HandlerFunc(signout)
+	c := &http.Cookie{
+		Name:   "session",
+		Value:  cookieToSet,
+		MaxAge: cAge,
+	}
+	req.AddCookie(c)
+	handler.ServeHTTP(res, req)
+	var session string
+	db.QueryRow("select session from image_blog.Users where username=\"admin\"").Scan(&session)
+	if session != "" {
+		t.Error("Session not Deleted")
+	}
+	newCookie, cookErr := req.Cookie("session")
+	if cookErr != nil {
+		t.Error("could not get cookie from request")
+	}
+	if newCookie.MaxAge > 1 {
+		t.Error("session not expired")
 	}
 }

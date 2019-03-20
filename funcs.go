@@ -166,6 +166,19 @@ func loggedIn(w http.ResponseWriter, r *http.Request) bool {
 		SentData.Loggedin = false
 		return false
 	}
+	var retries string
+	getRetry := db.QueryRow("select retry from image_blog.Users where username = ?", username).Scan(&retries)
+	if getRetry != nil {
+		return false
+	}
+	setRetry, err := strconv.Atoi(retries)
+	if err != nil {
+		return false
+	}
+	if setRetry >= 5 {
+		log.Criticalf("User %s is blocked", username)
+		return false
+	}
 	db.Exec(
 		`
 		update image_blog.Users set last_activity = ? where username = ?
