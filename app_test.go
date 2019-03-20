@@ -210,7 +210,7 @@ func TestInfoQuery(t *testing.T) {
 		t.Error(j.Error())
 	}
 	if responsJson.Data.Image.Name != myImage {
-		t.Errorf("Expect to delete %s but delete %s", myImage, responsJson.Data.Image.Name)
+		t.Errorf("Expect to get %s but get %s", myImage, responsJson.Data.Image.Name)
 	}
 
 }
@@ -239,7 +239,7 @@ func TestSearch(t *testing.T) {
 			status, http.StatusOK)
 	}
 	if len(Data.List) != 1 {
-		t.Errorf("List length should be 2 but get %v", len(Data.List))
+		t.Errorf("List length should be 1 but get %v", len(Data.List))
 	}
 	var myImage string
 	db.QueryRow("select name from image_blog.images where description=\"test upload\"").Scan(&myImage)
