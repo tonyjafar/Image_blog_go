@@ -300,6 +300,83 @@ func TestInfoDelete(t *testing.T) {
 	}
 }
 
+func TestUsersAdminAddLoginChange(t *testing.T) {
+	cookieToSet := "XXX,admin"
+	c := &http.Cookie{
+		Name:   "session",
+		Value:  cookieToSet,
+		MaxAge: cAge,
+	}
+
+	formAdd := url.Values{}
+	formAdd.Add("username", "test")
+	formAdd.Add("password", "Test1!222")
+	formAdd.Add("admin", "no")
+	reqAdd, errAdd := http.NewRequest("POST", "/add-user", strings.NewReader(formAdd.Encode()))
+	if errAdd != nil {
+		t.Fatal(errAdd.Error())
+	}
+	resAdd := httptest.NewRecorder()
+
+	handlerAdd := http.HandlerFunc(addUserAdmin)
+
+	reqAdd.AddCookie(c)
+	reqAdd.Form = formAdd
+	handlerAdd.ServeHTTP(resAdd, reqAdd)
+
+	if !Data.PassError.IsSucc {
+		t.Error("User not added!")
+	}
+	var userAdd string
+	dbErrAdd := db.QueryRow("select username from image_blog.Users where username = \"test\"").Scan(&userAdd)
+	if dbErrAdd != nil {
+		t.Errorf("Failed to get User from DB: %s", dbErrAdd.Error())
+	}
+	if userAdd != "test" {
+		t.Errorf("Expect user to be test - but got: %s", userAdd)
+	}
+	formLog := url.Values{}
+	formLog.Add("username", "test")
+	formLog.Add("password", "Test1!222")
+	reqLog, errLog := http.NewRequest("POST", "/signin", strings.NewReader(formLog.Encode()))
+	if errLog != nil {
+		t.Fatal(errLog.Error())
+	}
+	resLog := httptest.NewRecorder()
+	handleLog := http.HandlerFunc(login)
+	reqLog.Form = formLog
+	handleLog.ServeHTTP(resLog, reqLog)
+	if Data.Username != "test" {
+		t.Errorf("Expected user test got %s", Data.Username)
+	}
+	var session string
+	dbErrLog := db.QueryRow("select session from image_blog.Users where username = \"test\"").Scan(&session)
+	if dbErrLog != nil {
+		t.Errorf("Failed to get session value: %s", dbErrLog.Error())
+	}
+	if session == "" {
+		t.Error("expexted to get value but got nil")
+	}
+	reqDel, errDel := http.NewRequest("GET", "/edit-user?delete=test", nil)
+	if errDel != nil {
+		t.Fatal(errDel.Error())
+	}
+	resDel := httptest.NewRecorder()
+	handlerDel := http.HandlerFunc(usersAdminChange)
+
+	reqDel.AddCookie(c)
+	handlerDel.ServeHTTP(resDel, reqDel)
+	var userDel string
+	dbErrDel := db.QueryRow("select username from image_blog.Users where username = \"test\"").Scan(&userDel)
+	if dbErrDel == nil {
+		t.Errorf("Failed to delete User from DB: %s", dbErrDel.Error())
+	}
+	if userDel != "" {
+		t.Errorf("Expect user to be empty - but got: %s", userDel)
+	}
+
+}
+
 func TestSignout(t *testing.T) {
 	cookieToSet := "XXX,admin"
 	req, err := http.NewRequest("GET", "/signout", nil)
@@ -327,5 +404,27 @@ func TestSignout(t *testing.T) {
 	}
 	if newCookie.MaxAge > 1 {
 		t.Error("session not expired")
+	}
+}
+
+func TestLoginFailed(t *testing.T) {
+	formLog := url.Values{}
+	formLog.Add("username", "test")
+	formLog.Add("password", "Test1!222rrrr")
+	reqLog, errLog := http.NewRequest("POST", "/signin", strings.NewReader(formLog.Encode()))
+	if errLog != nil {
+		t.Fatal(errLog.Error())
+	}
+	resLog := httptest.NewRecorder()
+	handleLog := http.HandlerFunc(login)
+	reqLog.Form = formLog
+	handleLog.ServeHTTP(resLog, reqLog)
+	if Data.Username == "test" {
+		t.Errorf("got %s", Data.Username)
+	}
+	var session string
+	db.QueryRow("select session from image_blog.Users where username = \"test\"").Scan(&session)
+	if session != "" {
+		t.Error("expexted to get nil but got value")
 	}
 }
