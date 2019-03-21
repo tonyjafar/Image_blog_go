@@ -246,6 +246,12 @@ func TestSearch(t *testing.T) {
 	if Data.List[0] != myImage {
 		t.Errorf("getting %s but expected %s", Data.List[0], myImage)
 	}
+	if Data.MyVar.PageNumber != 1 {
+		t.Errorf("got %v expected 1", Data.MyVar.PageNumber)
+	}
+	if Data.MyVar.Next || Data.MyVar.Prev {
+		t.Errorf("Should both value return false, get %v %v", Data.MyVar.Next, Data.MyVar.Prev)
+	}
 
 }
 
