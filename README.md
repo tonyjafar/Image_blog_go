@@ -79,6 +79,8 @@ $ mysql -u $USER -p < template.sql
 $ touch conf.json && vim conf.json
 $ go build
 $ ./Image_blog_go
+#Run Tests
+$ go test -v
 
 ```
 then you can access ther server in browser http://localhost:8000
