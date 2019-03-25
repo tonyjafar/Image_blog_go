@@ -540,11 +540,36 @@ func admin(w http.ResponseWriter, r *http.Request) {
 	SentData := &Data
 	SentData.Admin = true
 	SentData.Username = username
-	var imageCount, videoCount, userCount, blockedUser string
+	var imageCount, videoCount, userCount, blockedUser, imageMonthVar, imageCountVar, imageYearVar, imageYearCountVar,
+		videoMonthVar, videoYearVar, videoCountVar, videoCounYeartVar string
+	SentData.Statics.ImagesByMonths = nil
+	SentData.Statics.ImagesByYears = nil
+	SentData.Statics.VideosByMonths = nil
+	SentData.Statics.VideosByYears = nil
 	db.QueryRow("select count(*) from image_blog.images").Scan(&imageCount)
 	db.QueryRow("select count(*) from image_blog.videos").Scan(&videoCount)
 	db.QueryRow("select count(*) from image_blog.Users").Scan(&userCount)
 	db.QueryRow("select count(*) from image_blog.Users where retry >= 5").Scan(&blockedUser)
+	getImageByMonth, _ := db.Query("select monthname(created_at), count(*) from images group by monthname(created_at)")
+	getImageByYear, _ := db.Query("select year(created_at), count(*) from images group by year(created_at)")
+	getVideoByMonth, _ := db.Query("select monthname(created_at), count(*) from videos group by monthname(created_at)")
+	getVideoByYear, _ := db.Query("select year(created_at), count(*) from videos group by year(created_at)")
+	for getImageByMonth.Next() {
+		getImageByMonth.Scan(&imageMonthVar, &imageCountVar)
+		SentData.Statics.ImagesByMonths = append(SentData.Statics.ImagesByMonths, ImageByMonth{imageMonthVar, imageCountVar})
+	}
+	for getImageByYear.Next() {
+		getImageByYear.Scan(&imageYearVar, &imageYearCountVar)
+		SentData.Statics.ImagesByYears = append(SentData.Statics.ImagesByYears, ImageByYear{imageYearVar, imageYearCountVar})
+	}
+	for getVideoByMonth.Next() {
+		getVideoByMonth.Scan(&videoMonthVar, &videoCountVar)
+		SentData.Statics.VideosByMonths = append(SentData.Statics.VideosByMonths, VideoByMonth{videoMonthVar, videoCountVar})
+	}
+	for getVideoByYear.Next() {
+		getVideoByYear.Scan(&videoYearVar, &videoCounYeartVar)
+		SentData.Statics.VideosByYears = append(SentData.Statics.VideosByYears, VideoByYear{videoYearVar, videoCounYeartVar})
+	}
 	SentData.Statics.ImageCount = imageCount
 	SentData.Statics.VideoCount = videoCount
 	SentData.Statics.UserCount = userCount

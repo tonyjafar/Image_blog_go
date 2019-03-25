@@ -68,11 +68,35 @@ type Users struct {
 }
 
 type AdminStatics struct {
-	ImageCount  string
-	VideoCount  string
-	UserCount   string
-	BlockedUser string
-	AdminSearch bool
+	ImageCount     string
+	VideoCount     string
+	UserCount      string
+	BlockedUser    string
+	AdminSearch    bool
+	ImagesByMonths []ImageByMonth
+	ImagesByYears  []ImageByYear
+	VideosByMonths []VideoByMonth
+	VideosByYears  []VideoByYear
+}
+
+type ImageByMonth struct {
+	Month string
+	Count string
+}
+
+type VideoByMonth struct {
+	Month string
+	Count string
+}
+
+type ImageByYear struct {
+	Year  string
+	Count string
+}
+
+type VideoByYear struct {
+	Year  string
+	Count string
 }
 
 type FileError struct {
