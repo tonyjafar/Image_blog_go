@@ -164,6 +164,20 @@ func loggedIn(w http.ResponseWriter, r *http.Request) bool {
 	}
 	if cookieSession != session {
 		SentData.Loggedin = false
+		getAndUpdateRetry(username)
+		return false
+	}
+	var retries string
+	getRetry := db.QueryRow("select retry from image_blog.Users where username = ?", username).Scan(&retries)
+	if getRetry != nil {
+		return false
+	}
+	setRetry, err := strconv.Atoi(retries)
+	if err != nil {
+		return false
+	}
+	if setRetry >= 5 {
+		log.Criticalf("User %s is blocked", username)
 		return false
 	}
 	var retries string

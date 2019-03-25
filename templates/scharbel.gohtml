@@ -1,0 +1,26 @@
+{{template "header" .}}
+<div class="jumbotron">
+<div class="container">
+<h1>Get Scharbel Time</h1>
+</div>
+</div>
+<div class="container">
+<h3> Years: {{ .Scharbel.Years }} </h3>
+<h3> Months: {{ .Scharbel.Months }} </h3>
+<h3> Days: {{ .Scharbel.Days }} </h3>
+<h3> Hours: {{ .Scharbel.Hours }} </h3>
+<h3> Minutes: {{ .Scharbel.Minutes }} </h3>
+<h3> Seconds: {{ .Scharbel.Seconds }} </h3>
+<a id="getIt" class="btn btn-info" href="/scharbel" hidden="hidden">Update</a>
+<br>
+<br>
+</div>
+<script type="text/javascript">
+   var auto_refresh = setInterval(
+      function ()
+      {
+         document.getElementById("getIt").click();
+      }, 1000); // refresh every 10000 milliseconds
+</script>
+
+{{template "footer"}}

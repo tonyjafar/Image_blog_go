@@ -540,11 +540,36 @@ func admin(w http.ResponseWriter, r *http.Request) {
 	SentData := &Data
 	SentData.Admin = true
 	SentData.Username = username
-	var imageCount, videoCount, userCount, blockedUser string
+	var imageCount, videoCount, userCount, blockedUser, imageMonthVar, imageCountVar, imageYearVar, imageYearCountVar,
+		videoMonthVar, videoYearVar, videoCountVar, videoCounYeartVar string
+	SentData.Statics.ImagesByMonths = nil
+	SentData.Statics.ImagesByYears = nil
+	SentData.Statics.VideosByMonths = nil
+	SentData.Statics.VideosByYears = nil
 	db.QueryRow("select count(*) from image_blog.images").Scan(&imageCount)
 	db.QueryRow("select count(*) from image_blog.videos").Scan(&videoCount)
 	db.QueryRow("select count(*) from image_blog.Users").Scan(&userCount)
 	db.QueryRow("select count(*) from image_blog.Users where retry >= 5").Scan(&blockedUser)
+	getImageByMonth, _ := db.Query("select monthname(created_at), count(*) from images group by monthname(created_at)")
+	getImageByYear, _ := db.Query("select year(created_at), count(*) from images group by year(created_at)")
+	getVideoByMonth, _ := db.Query("select monthname(created_at), count(*) from videos group by monthname(created_at)")
+	getVideoByYear, _ := db.Query("select year(created_at), count(*) from videos group by year(created_at)")
+	for getImageByMonth.Next() {
+		getImageByMonth.Scan(&imageMonthVar, &imageCountVar)
+		SentData.Statics.ImagesByMonths = append(SentData.Statics.ImagesByMonths, ImageByMonth{imageMonthVar, imageCountVar})
+	}
+	for getImageByYear.Next() {
+		getImageByYear.Scan(&imageYearVar, &imageYearCountVar)
+		SentData.Statics.ImagesByYears = append(SentData.Statics.ImagesByYears, ImageByYear{imageYearVar, imageYearCountVar})
+	}
+	for getVideoByMonth.Next() {
+		getVideoByMonth.Scan(&videoMonthVar, &videoCountVar)
+		SentData.Statics.VideosByMonths = append(SentData.Statics.VideosByMonths, VideoByMonth{videoMonthVar, videoCountVar})
+	}
+	for getVideoByYear.Next() {
+		getVideoByYear.Scan(&videoYearVar, &videoCounYeartVar)
+		SentData.Statics.VideosByYears = append(SentData.Statics.VideosByYears, VideoByYear{videoYearVar, videoCounYeartVar})
+	}
 	SentData.Statics.ImageCount = imageCount
 	SentData.Statics.VideoCount = videoCount
 	SentData.Statics.UserCount = userCount
@@ -1057,4 +1082,36 @@ func getInfo(w http.ResponseWriter, r *http.Request) {
 	}
 	result := executeQuery(w, r.URL.Query().Get("query"), schema)
 	json.NewEncoder(w).Encode(result)
+}
+
+func getScharbelTime(w http.ResponseWriter, r *http.Request) {
+	if !loggedIn(w, r) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	c, _ := r.Cookie("session")
+	username := strings.Split(c.Value, ",")[1]
+	if !isAdmin(username) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	SentData := &Data
+	timeFormat := "2006-01-02 15:04:05 CET"
+	scharbelTime := "2019-03-05 09:50:00 CET"
+	loc, _ := time.LoadLocation("Europe/Berlin")
+	parseTime, _ := time.ParseInLocation(timeFormat, scharbelTime, loc)
+	getSeconds := int(time.Since(parseTime).Seconds())
+	SentData.Scharbel.Years = getSeconds / 31557600
+	SentData.Scharbel.Months = (getSeconds % 31557600) / 2592000
+	SentData.Scharbel.Days = (getSeconds % 2592000) / 86400
+	SentData.Scharbel.Hours = (getSeconds % 86400) / 3600
+	SentData.Scharbel.Minutes = (getSeconds % 3600) / 60
+	SentData.Scharbel.Seconds = (getSeconds % 3600) % 60
+	if r.Method == http.MethodPost {
+		tpl.ExecuteTemplate(w, "scharbel.gohtml", &SentData)
+		return
+	}
+	tpl.ExecuteTemplate(w, "scharbel.gohtml", &SentData)
+	return
+
 }
