@@ -541,7 +541,7 @@ func admin(w http.ResponseWriter, r *http.Request) {
 	SentData.Admin = true
 	SentData.Username = username
 	var imageCount, videoCount, userCount, blockedUser, imageMonthVar, imageCountVar, imageYearVar, imageYearCountVar,
-		videoMonthVar, videoYearVar, videoCountVar, videoCounYeartVar string
+		videoMonthVar, videoYearVar, videoCountVar, videoCounYeartVar, imagesSize, videosSize, sizeDB string
 	SentData.Statics.ImagesByMonths = nil
 	SentData.Statics.ImagesByYears = nil
 	SentData.Statics.VideosByMonths = nil
@@ -550,10 +550,14 @@ func admin(w http.ResponseWriter, r *http.Request) {
 	db.QueryRow("select count(*) from image_blog.videos").Scan(&videoCount)
 	db.QueryRow("select count(*) from image_blog.Users").Scan(&userCount)
 	db.QueryRow("select count(*) from image_blog.Users where retry >= 5").Scan(&blockedUser)
+	db.QueryRow("select sum(size)/1024/1024/1024 from image_blog.images").Scan(&imagesSize)
+	db.QueryRow("select sum(size)/1024/1024/1024 from image_blog.videos").Scan(&videosSize)
+	db.QueryRow("SELECT sum( data_length + index_length ) / 1024 / 1024/ 1024 \"database size in GB\" FROM information_schema.TABLES WHERE table_schema = \"image_blog\"").Scan(&sizeDB)
 	getImageByMonth, _ := db.Query("select monthname(created_at), count(*) from images group by monthname(created_at)")
 	getImageByYear, _ := db.Query("select year(created_at), count(*) from images group by year(created_at)")
 	getVideoByMonth, _ := db.Query("select monthname(created_at), count(*) from videos group by monthname(created_at)")
 	getVideoByYear, _ := db.Query("select year(created_at), count(*) from videos group by year(created_at)")
+
 	for getImageByMonth.Next() {
 		getImageByMonth.Scan(&imageMonthVar, &imageCountVar)
 		SentData.Statics.ImagesByMonths = append(SentData.Statics.ImagesByMonths, ImageByMonth{imageMonthVar, imageCountVar})
@@ -570,6 +574,9 @@ func admin(w http.ResponseWriter, r *http.Request) {
 		getVideoByYear.Scan(&videoYearVar, &videoCounYeartVar)
 		SentData.Statics.VideosByYears = append(SentData.Statics.VideosByYears, VideoByYear{videoYearVar, videoCounYeartVar})
 	}
+	SentData.Statics.SizeDB = sizeDB
+	SentData.Statics.VideosSize = videosSize
+	SentData.Statics.ImageSize = imagesSize
 	SentData.Statics.ImageCount = imageCount
 	SentData.Statics.VideoCount = videoCount
 	SentData.Statics.UserCount = userCount

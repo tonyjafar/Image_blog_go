@@ -73,6 +73,9 @@ type AdminStatics struct {
 	UserCount      string
 	BlockedUser    string
 	AdminSearch    bool
+	ImageSize      string
+	VideosSize     string
+	SizeDB         string
 	ImagesByMonths []ImageByMonth
 	ImagesByYears  []ImageByYear
 	VideosByMonths []VideoByMonth
