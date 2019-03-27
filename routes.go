@@ -541,11 +541,16 @@ func admin(w http.ResponseWriter, r *http.Request) {
 	SentData.Admin = true
 	SentData.Username = username
 	var imageCount, videoCount, userCount, blockedUser, imageMonthVar, imageCountVar, imageYearVar, imageYearCountVar,
-		videoMonthVar, videoYearVar, videoCountVar, videoCounYeartVar, imagesSize, videosSize, sizeDB string
+		videoMonthVar, videoYearVar, videoCountVar, videoCounYeartVar, imagesSize, videosSize, sizeDB,
+		imageDesc, imageDescCount, imageLoc, imageLocCount, videoDesc, videoDescCount, videoLoc, videoLocCount string
 	SentData.Statics.ImagesByMonths = nil
 	SentData.Statics.ImagesByYears = nil
 	SentData.Statics.VideosByMonths = nil
 	SentData.Statics.VideosByYears = nil
+	SentData.Statics.VideosDesc = nil
+	SentData.Statics.VideosLoc = nil
+	SentData.Statics.ImagesDesc = nil
+	SentData.Statics.ImagesLoc = nil
 	db.QueryRow("select count(*) from image_blog.images").Scan(&imageCount)
 	db.QueryRow("select count(*) from image_blog.videos").Scan(&videoCount)
 	db.QueryRow("select count(*) from image_blog.Users").Scan(&userCount)
@@ -557,6 +562,30 @@ func admin(w http.ResponseWriter, r *http.Request) {
 	getImageByYear, _ := db.Query("select year(created_at), count(*) from images group by year(created_at)")
 	getVideoByMonth, _ := db.Query("select monthname(created_at), count(*) from videos group by monthname(created_at)")
 	getVideoByYear, _ := db.Query("select year(created_at), count(*) from videos group by year(created_at)")
+	getImageDesc, _ := db.Query("select description, count(*) from images group by description")
+	getImageLoc, _ := db.Query("select location, count(*) from images group by location")
+	getVideoDesc, _ := db.Query("select description, count(*) from videos group by description")
+	getVideoLoc, _ := db.Query("select location, count(*) from videos group by location")
+
+	for getImageDesc.Next() {
+		getImageDesc.Scan(&imageDesc, &imageDescCount)
+		SentData.Statics.ImagesDesc = append(SentData.Statics.ImagesDesc, ImageDesc{imageDesc, imageDescCount})
+	}
+
+	for getImageLoc.Next() {
+		getImageLoc.Scan(&imageLoc, &imageLocCount)
+		SentData.Statics.ImagesLoc = append(SentData.Statics.ImagesLoc, ImageLoc{imageLoc, imageLocCount})
+	}
+
+	for getVideoDesc.Next() {
+		getVideoDesc.Scan(&videoDesc, &videoDescCount)
+		SentData.Statics.VideosDesc = append(SentData.Statics.VideosDesc, VideoDesc{videoDesc, videoDescCount})
+	}
+
+	for getVideoLoc.Next() {
+		getVideoLoc.Scan(&videoLoc, &videoLocCount)
+		SentData.Statics.VideosLoc = append(SentData.Statics.VideosLoc, VideoLoc{videoLoc, videoLocCount})
+	}
 
 	for getImageByMonth.Next() {
 		getImageByMonth.Scan(&imageMonthVar, &imageCountVar)
