@@ -80,6 +80,30 @@ type AdminStatics struct {
 	ImagesByYears  []ImageByYear
 	VideosByMonths []VideoByMonth
 	VideosByYears  []VideoByYear
+	ImagesDesc     []ImageDesc
+	ImagesLoc      []ImageLoc
+	VideosDesc     []VideoDesc
+	VideosLoc      []VideoLoc
+}
+
+type ImageDesc struct {
+	Desc  string
+	Count string
+}
+
+type ImageLoc struct {
+	Loc   string
+	Count string
+}
+
+type VideoDesc struct {
+	Desc  string
+	Count string
+}
+
+type VideoLoc struct {
+	Loc   string
+	Count string
 }
 
 type ImageByMonth struct {

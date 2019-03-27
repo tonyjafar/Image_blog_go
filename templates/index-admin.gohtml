@@ -285,6 +285,105 @@
         // Instantiate and draw our chart, passing in some options.
         var chart_video_year = new google.visualization.PieChart(document.getElementById('chart_div4'));
         chart_video_year.draw(data_video_year, options_video_year);
+        // start
+        var data_image_desc = new google.visualization.DataTable();
+        
+        data_image_desc.addColumn('string', 'Description');
+        data_image_desc.addColumn('number', 'Count');
+        
+        data_image_desc.addRows([
+            {{ range .Statics.ImagesDesc }}
+            ['{{.Desc}}', Number({{.Count}})],
+           {{ end }}
+        ]);
+        
+
+        // Set chart options
+        var options_image_desc = {'title':'Images Description',
+        pieHole: 0.4,
+        is3D: true,
+
+                       'width':500,
+                       'height':500};
+
+        // Instantiate and draw our chart, passing in some options.
+        var chart_image_desc = new google.visualization.PieChart(document.getElementById('chart_div5'));
+        chart_image_desc.draw(data_image_desc, options_image_desc);
+
+        // start
+        var data_image_loc = new google.visualization.DataTable();
+        
+        data_image_loc.addColumn('string', 'Location');
+        data_image_loc.addColumn('number', 'Count');
+        
+        data_image_loc.addRows([
+            {{ range .Statics.ImagesLoc }}
+            ['{{.Loc}}', Number({{.Count}})],
+           {{ end }}
+        ]);
+        
+
+        // Set chart options
+        var options_image_loc = {'title':'Images Location',
+        pieHole: 0.4,
+        is3D: true,
+
+                       'width':500,
+                       'height':500};
+
+        // Instantiate and draw our chart, passing in some options.
+        var chart_image_loc = new google.visualization.PieChart(document.getElementById('chart_div6'));
+        chart_image_loc.draw(data_image_loc, options_image_loc);
+
+         // start
+        var data_video_desc = new google.visualization.DataTable();
+        
+        data_video_desc.addColumn('string', 'Description');
+        data_video_desc.addColumn('number', 'Count');
+        
+        data_video_desc.addRows([
+            {{ range .Statics.VideosDesc }}
+            ['{{.Desc}}', Number({{.Count}})],
+           {{ end }}
+        ]);
+        
+
+        // Set chart options
+        var options_video_desc = {'title':'Videos Description',
+        pieHole: 0.4,
+        is3D: true,
+
+                       'width':500,
+                       'height':500};
+
+        // Instantiate and draw our chart, passing in some options.
+        var chart_video_desc = new google.visualization.PieChart(document.getElementById('chart_div7'));
+        chart_video_desc.draw(data_video_desc, options_video_desc);
+
+       // start
+        var data_video_loc = new google.visualization.DataTable();
+        
+        data_video_loc.addColumn('string', 'Location');
+        data_video_loc.addColumn('number', 'Count');
+        
+        data_video_loc.addRows([
+            {{ range .Statics.VideosLoc }}
+            ['{{.Loc}}', Number({{.Count}})],
+           {{ end }}
+        ]);
+        
+
+        // Set chart options
+        var options_video_loc = {'title':'Videos Location',
+        pieHole: 0.4,
+        is3D: true,
+
+                       'width':500,
+                       'height':500};
+
+        // Instantiate and draw our chart, passing in some options.
+        var chart_video_loc = new google.visualization.PieChart(document.getElementById('chart_div8'));
+        chart_video_loc.draw(data_video_loc, options_video_loc);
       }
     </script>
 
@@ -293,6 +392,13 @@
 <div class="col-lg-3 col-md-2" id="chart_div2"></div>
 <div class="col-lg-3 col-md-2" id="chart_div3"></div>
 <div class="col-lg-3 col-md-2" id="chart_div4"></div>
+</div>
+<hr>
+<div class="row">
+<div class="col-lg-3 col-md-2" id="chart_div5"></div>
+<div class="col-lg-3 col-md-2" id="chart_div6"></div>
+<div class="col-lg-3 col-md-2" id="chart_div7"></div>
+<div class="col-lg-3 col-md-2" id="chart_div8"></div>
 </div>
 
 
