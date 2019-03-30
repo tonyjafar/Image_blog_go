@@ -1,11 +1,14 @@
 {{template "header" .}}
-<div class="jumbotron">
+<br>
+<br>
 <div class="container">
+<div class="jumbotron">
+
 <h1>Your Images</h1>
 </div>
 </div>
 <div class="container">
-<h3>{{.MyVar.ListLength}} Images</h3>
+<h3 class="text-light">{{.MyVar.ListLength}} Images</h3>
 <a class="btn btn-info" href="/images?all">View All Images</a>
 <a class="btn btn-info" href="/images?slide=true&page={{.MyVar.PageNumber}}">Activate Slide Show for current page</a>
 <a class="btn btn-info" href="/images?slide=true&all">Activate Slide Show for all page</a>
