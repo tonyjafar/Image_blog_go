@@ -189,6 +189,8 @@ func loggedIn(w http.ResponseWriter, r *http.Request) bool {
 		username,
 	)
 	SentData.Loggedin = true
+	c.MaxAge = cAge
+	http.SetCookie(w, c)
 	return true
 }
 
