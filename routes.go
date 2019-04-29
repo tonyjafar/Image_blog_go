@@ -21,8 +21,6 @@ func index(w http.ResponseWriter, r *http.Request) {
 	c, err := r.Cookie("session")
 	List := []string{}
 	if err == nil {
-		c.MaxAge = cAge
-		http.SetCookie(w, c)
 		username := strings.Split(c.Value, ",")[1]
 		SentData.Username = username
 		if !isAdmin(username) {
@@ -154,8 +152,6 @@ func images(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/css; charset=utf-8")
 	}
 	List := []string{}
-	c.MaxAge = cAge
-	http.SetCookie(w, c)
 	SentData.Loggedin = true
 	rows, err := db.Query(
 		`
@@ -221,8 +217,6 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
-	c.MaxAge = cAge
-	http.SetCookie(w, c)
 	username := strings.Split(c.Value, ",")[1]
 	SentData.Username = username
 	if !isAdmin(username) {
@@ -330,7 +324,6 @@ func search(w http.ResponseWriter, r *http.Request) {
 	} else {
 		SentData.Admin = true
 	}
-	c.MaxAge = cAge
 	List := []string{}
 	SentData.Loggedin = true
 	var v bool
@@ -401,8 +394,6 @@ func addVideo(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
-	c.MaxAge = cAge
-	http.SetCookie(w, c)
 	username := strings.Split(c.Value, ",")[1]
 	SentData.Username = username
 	if !isAdmin(username) {
@@ -490,8 +481,6 @@ func videos(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	List := []string{}
-	c.MaxAge = cAge
-	http.SetCookie(w, c)
 	username := strings.Split(c.Value, ",")[1]
 	SentData.Username = username
 	if !isAdmin(username) {
