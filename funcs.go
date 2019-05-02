@@ -149,9 +149,13 @@ func executeQuery(w http.ResponseWriter, query string, schema graphql.Schema) *g
 
 func loggedIn(w http.ResponseWriter, r *http.Request) bool {
 	SentData := &Data
+	SentData.Username = ""
+	SentData.Loggedin = false
+	SentData.Admin = false
 	c, err := r.Cookie("session")
 	if err != nil {
 		SentData.Loggedin = false
+		SentData.Admin = false
 		return false
 	}
 	var session string
@@ -160,24 +164,32 @@ func loggedIn(w http.ResponseWriter, r *http.Request) bool {
 	dbSession := db.QueryRow("select session from image_blog.Users where username = ?", username).Scan(&session)
 	if dbSession != nil {
 		SentData.Loggedin = false
+		SentData.Admin = false
 		return false
 	}
 	if cookieSession != session {
 		SentData.Loggedin = false
+		SentData.Admin = false
 		getAndUpdateRetry(username)
 		return false
 	}
 	var retries string
 	getRetry := db.QueryRow("select retry from image_blog.Users where username = ?", username).Scan(&retries)
 	if getRetry != nil {
+		SentData.Loggedin = false
+		SentData.Admin = false
 		return false
 	}
 	setRetry, err := strconv.Atoi(retries)
 	if err != nil {
+		SentData.Loggedin = false
+		SentData.Admin = false
 		return false
 	}
 	if setRetry >= 5 {
 		log.Criticalf("User %s is blocked", username)
+		SentData.Loggedin = false
+		SentData.Admin = false
 		return false
 	}
 
@@ -189,6 +201,7 @@ func loggedIn(w http.ResponseWriter, r *http.Request) bool {
 		username,
 	)
 	SentData.Loggedin = true
+	SentData.Username = username
 	c.MaxAge = cAge
 	http.SetCookie(w, c)
 	return true
@@ -382,14 +395,19 @@ func checkFileName(f string) bool {
 }
 
 func isAdmin(u string) bool {
+	SentData := &Data
+	SentData.Admin = false
 	var admin string
 	getStatus := db.QueryRow("select admin from image_blog.Users where username = ?", u).Scan(&admin)
 	if getStatus != nil {
+		SentData.Admin = false
 		return false
 	}
 	if admin != "yes" {
+		SentData.Admin = false
 		return false
 	}
+	SentData.Admin = true
 	return true
 }
 
