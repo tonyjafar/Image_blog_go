@@ -22,14 +22,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 	List := []string{}
 	if err == nil {
 		username := strings.Split(c.Value, ",")[1]
-		SentData.Username = username
-		if !isAdmin(username) {
-			SentData.Admin = false
-		} else {
-			SentData.Admin = true
-		}
-	} else {
-		SentData.Admin = false
+		isAdmin(username)
 	}
 	if loggedIn(w, r) {
 		rows, err := db.Query(
@@ -115,9 +108,8 @@ func login(w http.ResponseWriter, r *http.Request) {
 			}
 			log.Infof("User %s logged in", un)
 			SentData.Username = un
-			if isAdmin(un) {
-				SentData.Admin = true
-			}
+			isAdmin(un)
+			SentData.Loggedin = true
 			http.Redirect(w, r, "/images", http.StatusSeeOther)
 			return
 		} else {
@@ -142,12 +134,7 @@ func images(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	username := strings.Split(c.Value, ",")[1]
-	SentData.Username = username
-	if !isAdmin(username) {
-		SentData.Admin = false
-	} else {
-		SentData.Admin = true
-	}
+	isAdmin(username)
 	if strings.HasSuffix(r.RequestURI, ".css") {
 		w.Header().Set("Content-Type", "text/css; charset=utf-8")
 	}
@@ -218,12 +205,10 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	username := strings.Split(c.Value, ",")[1]
-	SentData.Username = username
 	if !isAdmin(username) {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
 		return
 	}
-	SentData.Admin = true
 	if r.Method == http.MethodPost {
 		tn := time.Now()
 		l := r.FormValue("location")
@@ -301,7 +286,6 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 		SentData.ErrorFile.IsError = false
 		SentData.ErrorFile.IsSucc = true
 	}
-	SentData.Loggedin = true
 	tpl.ExecuteTemplate(w, "uplimage.gohtml", SentData)
 }
 
@@ -318,14 +302,8 @@ func search(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	username := strings.Split(c.Value, ",")[1]
-	SentData.Username = username
-	if !isAdmin(username) {
-		SentData.Admin = false
-	} else {
-		SentData.Admin = true
-	}
+	isAdmin(username)
 	List := []string{}
-	SentData.Loggedin = true
 	var v bool
 	if r.Method == http.MethodPost || strings.Contains(r.RequestURI, "page") || strings.Contains(r.RequestURI, "all") {
 		video := &v
@@ -395,12 +373,10 @@ func addVideo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	username := strings.Split(c.Value, ",")[1]
-	SentData.Username = username
 	if !isAdmin(username) {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
 		return
 	}
-	SentData.Admin = true
 	if r.Method == http.MethodPost {
 		tn := time.Now()
 		l := r.FormValue("location")
@@ -465,7 +441,6 @@ func addVideo(w http.ResponseWriter, r *http.Request) {
 		SentData.ErrorFile.IsError = false
 		SentData.ErrorFile.IsSucc = true
 	}
-	SentData.Loggedin = true
 	tpl.ExecuteTemplate(w, "uploadvideo.gohtml", SentData)
 }
 
@@ -482,13 +457,7 @@ func videos(w http.ResponseWriter, r *http.Request) {
 	}
 	List := []string{}
 	username := strings.Split(c.Value, ",")[1]
-	SentData.Username = username
-	if !isAdmin(username) {
-		SentData.Admin = false
-	} else {
-		SentData.Admin = true
-	}
-	SentData.Loggedin = true
+	isAdmin(username)
 	rows, err := db.Query(
 		`
 		SELECT name FROM
@@ -527,8 +496,6 @@ func admin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	SentData := &Data
-	SentData.Admin = true
-	SentData.Username = username
 	var imageCount, videoCount, userCount, blockedUser, imageMonthVar, imageCountVar, imageYearVar, imageYearCountVar,
 		videoMonthVar, videoYearVar, videoCountVar, videoCounYeartVar, imagesSize, videosSize, sizeDB,
 		imageDesc, imageDescCount, imageLoc, imageLocCount, videoDesc, videoDescCount, videoLoc, videoLocCount string
@@ -614,8 +581,6 @@ func imagesAdmin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	SentData := &Data
-	SentData.Admin = true
-	SentData.Username = username
 	if r.Method == http.MethodPost {
 		List := []Images{}
 		r.ParseForm()
@@ -676,14 +641,11 @@ func imagesAdminDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	c, _ := r.Cookie("session")
-	SentData := &Data
 	username := strings.Split(c.Value, ",")[1]
 	if !isAdmin(username) {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
 		return
 	}
-	SentData.Username = username
-	SentData.Admin = true
 	if r.Method == http.MethodGet {
 		r.ParseForm()
 		name := r.FormValue("delete")
@@ -709,8 +671,6 @@ func imagesAdminEdit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	SentData := &Data
-	SentData.Admin = true
-	SentData.Username = username
 	if r.Method == http.MethodGet {
 
 		r.ParseForm()
@@ -771,8 +731,6 @@ func videosAdmin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	SentData := &Data
-	SentData.Admin = true
-	SentData.Username = username
 	if r.Method == http.MethodPost {
 		List := []Images{}
 		r.ParseForm()
@@ -838,9 +796,6 @@ func videosAdminDelete(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
 		return
 	}
-	SentData := &Data
-	SentData.Admin = true
-	SentData.Username = username
 	if r.Method == http.MethodGet {
 		r.ParseForm()
 		name := r.FormValue("delete")
@@ -866,8 +821,6 @@ func videosAdminEdit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	SentData := &Data
-	SentData.Admin = true
-	SentData.Username = username
 	if r.Method == http.MethodGet {
 
 		r.ParseForm()
@@ -928,8 +881,6 @@ func usersAdmin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	SentData := &Data
-	SentData.Admin = true
-	SentData.Username = username
 	if r.Method == http.MethodPost {
 		List := []Users{}
 		r.ParseForm()
@@ -995,9 +946,6 @@ func usersAdminChange(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
 		return
 	}
-	SentData := &Data
-	SentData.Admin = true
-	SentData.Username = username
 	if r.Method == http.MethodGet {
 		r.ParseForm()
 		name := r.FormValue("name")
@@ -1035,8 +983,6 @@ func addUserAdmin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	SentData := &Data
-	SentData.Admin = true
-	SentData.Username = username
 	SentData.PassError.IsError = false
 	SentData.PassError.IsSucc = false
 	if r.Method == http.MethodPost {
