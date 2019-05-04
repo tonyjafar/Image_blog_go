@@ -151,7 +151,6 @@ func loggedIn(w http.ResponseWriter, r *http.Request) bool {
 	SentData := &Data
 	SentData.Username = ""
 	SentData.Loggedin = false
-	SentData.Admin = false
 	c, err := r.Cookie("session")
 	if err != nil {
 		SentData.Loggedin = false
