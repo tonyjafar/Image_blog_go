@@ -200,6 +200,7 @@ func loggedIn(w http.ResponseWriter, r *http.Request) bool {
 		username,
 	)
 	SentData.Loggedin = true
+	SentData.Username = username
 	return true
 }
 
