@@ -202,6 +202,7 @@ func loggedIn(w http.ResponseWriter, r *http.Request) bool {
 	)
 	SentData.Loggedin = true
 	SentData.Username = username
+	isAdmin(username)
 	c.MaxAge = cAge
 	http.SetCookie(w, c)
 	return true
