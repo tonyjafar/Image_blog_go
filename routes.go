@@ -21,6 +21,8 @@ func index(w http.ResponseWriter, r *http.Request) {
 	c, err := r.Cookie("session")
 	List := []string{}
 	if err == nil {
+		c.MaxAge = cAge
+		http.SetCookie(w, c)
 		username := strings.Split(c.Value, ",")[1]
 		isAdmin(username)
 	}
@@ -139,6 +141,8 @@ func images(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/css; charset=utf-8")
 	}
 	List := []string{}
+	c.MaxAge = cAge
+	http.SetCookie(w, c)
 	SentData.Loggedin = true
 	rows, err := db.Query(
 		`
@@ -204,6 +208,8 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
+	c.MaxAge = cAge
+	http.SetCookie(w, c)
 	username := strings.Split(c.Value, ",")[1]
 	if !isAdmin(username) {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
@@ -302,7 +308,17 @@ func search(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	username := strings.Split(c.Value, ",")[1]
+<<<<<<< HEAD
 	isAdmin(username)
+=======
+	SentData.Username = username
+	if !isAdmin(username) {
+		SentData.Admin = false
+	} else {
+		SentData.Admin = true
+	}
+	c.MaxAge = cAge
+>>>>>>> parent of 51ab8e8... remove duplicate code
 	List := []string{}
 	var v bool
 	if r.Method == http.MethodPost || strings.Contains(r.RequestURI, "page") || strings.Contains(r.RequestURI, "all") {
@@ -372,6 +388,8 @@ func addVideo(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
+	c.MaxAge = cAge
+	http.SetCookie(w, c)
 	username := strings.Split(c.Value, ",")[1]
 	if !isAdmin(username) {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
@@ -456,6 +474,8 @@ func videos(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	List := []string{}
+	c.MaxAge = cAge
+	http.SetCookie(w, c)
 	username := strings.Split(c.Value, ",")[1]
 	isAdmin(username)
 	rows, err := db.Query(
