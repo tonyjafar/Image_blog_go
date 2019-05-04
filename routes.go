@@ -308,9 +308,6 @@ func search(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	username := strings.Split(c.Value, ",")[1]
-<<<<<<< HEAD
-	isAdmin(username)
-=======
 	SentData.Username = username
 	if !isAdmin(username) {
 		SentData.Admin = false
@@ -318,7 +315,6 @@ func search(w http.ResponseWriter, r *http.Request) {
 		SentData.Admin = true
 	}
 	c.MaxAge = cAge
->>>>>>> parent of 51ab8e8... remove duplicate code
 	List := []string{}
 	var v bool
 	if r.Method == http.MethodPost || strings.Contains(r.RequestURI, "page") || strings.Contains(r.RequestURI, "all") {

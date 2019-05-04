@@ -201,13 +201,6 @@ func loggedIn(w http.ResponseWriter, r *http.Request) bool {
 		username,
 	)
 	SentData.Loggedin = true
-<<<<<<< HEAD
-	SentData.Username = username
-	isAdmin(username)
-	c.MaxAge = cAge
-	http.SetCookie(w, c)
-=======
->>>>>>> parent of 51ab8e8... remove duplicate code
 	return true
 }
 
