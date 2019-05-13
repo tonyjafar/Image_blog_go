@@ -14,13 +14,12 @@
 </div>
 </div>
 <div class="container">
-<h3 class="text-light"> Years: {{ .Scharbel.Years }} </h3>
-<h3 class="text-light"> Months: {{ .Scharbel.Months }} </h3>
-<h3 class="text-light"> Days: {{ .Scharbel.Days }} </h3>
-<h3 class="text-light"> Hours: {{ .Scharbel.Hours }} </h3>
-<h3 class="text-light"> Minutes: {{ .Scharbel.Minutes }} </h3>
-<h3 class="text-light"> Seconds: {{ .Scharbel.Seconds }} </h3>
-<a id="getIt" class="btn btn-info" href="/scharbel" hidden="hidden">Update</a>
+<h3 class="text-light" id="year"> Years: {{ .Scharbel.Years }} </h3>
+<h3 class="text-light" id="month"> Months: {{ .Scharbel.Months }} </h3>
+<h3 class="text-light" id="day"> Days: {{ .Scharbel.Days }} </h3>
+<h3 class="text-light" id="hour"> Hours: {{ .Scharbel.Hours }} </h3>
+<h3 class="text-light" id="min"> Minutes: {{ .Scharbel.Minutes }} </h3>
+<h3 class="text-light" id="sec"> Seconds: {{ .Scharbel.Seconds }} </h3>
 <br>
 <br>
 </div>
@@ -28,8 +27,41 @@
    var auto_refresh = setInterval(
       function ()
       {
-         document.getElementById("getIt").click();
+         Date.daysBetween();
       }, 1000); // refresh every 10000 milliseconds
+
+
+Date.daysBetween = function() {
+  //Get 1 day in milliseconds
+  var one_day=1000*60*60*24;
+  var date1 = new Date(2019, 2, 5, 9, 50, 0, 0);
+  var date2= new Date();
+
+  // Convert both dates to milliseconds
+  var date1_ms = date1.getTime();
+  var date2_ms = date2.getTime();
+
+  // Calculate the difference in milliseconds
+  var difference_ms = date2_ms - date1_ms;
+
+  var my_seconds = Math.abs(difference_ms / 1000);
+  var years =  Math.floor(my_seconds / 31557600);
+  var months =  Math.floor((my_seconds % 31557600) / 2592000);
+  var days =  Math.floor((my_seconds % 2592000) / 86400);
+  var hours =  Math.floor((my_seconds % 86400) / 3600);
+  var minutes =  Math.floor((my_seconds % 3600) / 60);
+  var seconds = Math.floor((my_seconds % 3600) % 60);
+
+
+  $('#year').html('Years: ' + years)
+  $('#month').html('Months: ' + months)
+  $('#day').html('Days: ' + days)
+  $('#hour').html('Hours: ' + hours)
+  $('#min').html('Minutes: ' + minutes)
+  $('#sec').html('Seconds: ' + seconds)
+
+  return
+}
 </script>
 
 {{template "footer-admin" .}}
