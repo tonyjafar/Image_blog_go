@@ -83,6 +83,6 @@ $ go test -v
 #Run Server
 $ ./Image_blog_go
 ```
-then you can access ther server in browser http://localhost:8000
+then you can access the server in browser http://localhost:8000
 
 Alternatively you can run both mysql and server using [docker](https://github.com/tonyjafar/docker-compose-examples/tree/master/image_blog_docker)
