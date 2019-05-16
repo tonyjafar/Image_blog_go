@@ -2,5 +2,5 @@
 Image_blog_go
 conf.json
 data/
-*.log
+logs/
 report

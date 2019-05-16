@@ -74,7 +74,7 @@ $ go get github.com/satori/go.uuid
 $ go get golang.org/x/crypto/bcrypt
 $ git clone https://github.com/tonyjafar/Image_blog_go.git
 $ cd Image_blog_go
-$ mkdir -p data/thumb && mkdir data/videos
+$ mkdir -p data/thumb && mkdir data/videos && makdir logs
 $ mysql -u $USER -p < template.sql
 $ touch conf.json && vim conf.json
 $ go build
