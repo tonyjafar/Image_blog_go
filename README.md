@@ -70,7 +70,7 @@ $ go get github.com/graphql-go/graphql
 $ go get github.com/go-sql-driver/mysql
 $ go get github.com/op/go-logging
 $ go get github.com/disintegration/imaging
-$ go get github.com/satori/go.uuid
+$ go get github.com/gofrs/uuid
 $ go get golang.org/x/crypto/bcrypt
 $ git clone https://github.com/tonyjafar/Image_blog_go.git
 $ cd Image_blog_go
