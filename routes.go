@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/disintegration/imaging"
-	uuid "github.com/satori/go.uuid"
+	uuid "github.com/gofrs/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
