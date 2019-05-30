@@ -157,7 +157,7 @@ func init() {
 func main() {
 	defer db.Close()
 	t := time.Now()
-	logFileName := "access-" + t.Format("2006-01-02T150405") + ".log"
+	logFileName := "access-" + t.Format("2006-01-02") + ".log"
 	f, err := os.OpenFile("logs/"+logFileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
