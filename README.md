@@ -2,6 +2,7 @@
 ## Project Structure
 ```.
 ├── conf.json
+├── logs
 ├── data
 │   ├── thumb
 │   └── videos
@@ -68,7 +69,7 @@ Or you can use the template.sql to import Sample DB with default admin user with
 # Prerequist "mysql DB" and "GOlang"
 $ go get github.com/graphql-go/graphql
 $ go get github.com/go-sql-driver/mysql
-$ go get github.com/op/go-logging
+$ go get gopkg.in/natefinch/lumberjack.v2
 $ go get github.com/disintegration/imaging
 $ go get github.com/gofrs/uuid
 $ go get golang.org/x/crypto/bcrypt
