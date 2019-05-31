@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"regexp"
@@ -140,7 +141,7 @@ func executeQuery(w http.ResponseWriter, query string, schema graphql.Schema) *g
 		RequestString: query,
 	})
 	if len(result.Errors) > 0 {
-		log.Errorf("errors: %v", result.Errors)
+		log.Printf("errors: %v", result.Errors)
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("400 - Bad Request!\n"))
 	}
@@ -186,7 +187,7 @@ func loggedIn(w http.ResponseWriter, r *http.Request) bool {
 		return false
 	}
 	if setRetry >= 5 {
-		log.Criticalf("User %s is blocked", username)
+		log.Printf("User %s is blocked", username)
 		SentData.Loggedin = false
 		SentData.Admin = false
 		return false
@@ -205,13 +206,13 @@ func loggedIn(w http.ResponseWriter, r *http.Request) bool {
 }
 
 func lastActivity() {
-	log.Debug("Started")
+	log.Println("DB Clean up Started")
 	timeFormat := "2006-01-02 15:04:05"
 	var username string
 	var lastActivityTime string
 	allUsers, err := db.Query("select username, last_activity from image_blog.Users where session is NOT NULL")
 	if err != nil {
-		log.Error(err.Error())
+		log.Println(err.Error())
 	}
 	for allUsers.Next() {
 		err := allUsers.Scan(&username, &lastActivityTime)
@@ -228,7 +229,7 @@ func lastActivity() {
 			db.Exec("update image_blog.Users set session = NULL where username = ?", username)
 		}
 	}
-	log.Debug("Finished")
+	log.Println("DB Clean up Finished")
 	time.Sleep(24 * time.Hour) //run every one day
 	lastActivity()
 }
@@ -379,7 +380,7 @@ func getAndUpdateRetry(u string) (bool, error) {
 		u,
 	)
 	if setRetry >= 5 {
-		log.Criticalf("User %s is blocked", u)
+		log.Printf("User %s is blocked", u)
 		return true, dbErr
 	}
 	return false, dbErr
