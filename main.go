@@ -4,11 +4,11 @@ import (
 	"database/sql"
 	"html/template"
 	"net/http"
-	"os"
-	"time"
+
+	"log"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/op/go-logging"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 const (
@@ -16,10 +16,6 @@ const (
 	widthThumbnail int = 400
 )
 
-var log = logging.MustGetLogger("appLogger.log")
-var format = logging.MustStringFormatter(
-	`%{time:15:04:05.000} %{shortfunc} [%{level:.4s}] %{id:03x} %{message}`,
-)
 var tpl *template.Template
 var db *sql.DB
 var err error
@@ -137,6 +133,14 @@ var num = template.FuncMap{
 	"red": red,
 }
 
+var l = &lumberjack.Logger{
+	Filename:   "logs/APP.log",
+	MaxSize:    500,
+	MaxBackups: 10,
+	MaxAge:     1,
+	Compress:   true,
+}
+
 func add(p int) int {
 	return p + 1
 }
@@ -156,20 +160,8 @@ func init() {
 
 func main() {
 	defer db.Close()
-	t := time.Now()
-	logFileName := "access-" + t.Format("2006-01-02") + ".log"
-	f, err := os.OpenFile("logs/"+logFileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		log.Fatalf("error opening file: %v", err)
-	}
-	defer f.Close()
-	backend2 := logging.NewLogBackend(f, "", 0)
-	backend2Formatter := logging.NewBackendFormatter(backend2, format)
-	backend1Leveled := logging.AddModuleLevel(backend2)
-	backend1Leveled.SetLevel(logging.ERROR, "")
-	backend1Leveled.SetLevel(logging.CRITICAL, "")
-	logging.SetBackend(backend1Leveled, backend2Formatter)
-	log.Debug("APP STARTED")
+	log.SetOutput(l)
+	log.Println("APP Started")
 	http.HandleFunc("/assets/", handleFileServer("./data", "/assets"))
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 	http.Handle("/favicon.ico", http.NotFoundHandler())
