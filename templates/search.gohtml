@@ -27,9 +27,9 @@
 <div class="container">
 {{ $i := index .MyVar.ImVi 0 }}
 {{if gt .MyVar.ListLength 0}}
-<a class="btn btn-info" href="/search?search_desc={{.MyVar.Searches.SearchDesc}}&search_loc={{.MyVar.Searches.SearchLocation}}&search_date={{.MyVar.Searches.SearchDate}}&optradio={{$i}}&all">View Them All</a>
+<a class="btn btn-info" href="/search?search={{.MyVar.Search}}&optradio={{$i}}&all">View Them All</a>
 {{ if eq  $i "image"}}
-<a class="btn btn-info" href="/search?search_desc={{.MyVar.Searches.SearchDesc}}&search_loc={{.MyVar.Searches.SearchLocation}}&search_date={{.MyVar.Searches.SearchDate}}&optradio={{$i}}&slide=true&all">Activate Slide Show</a>
+<a class="btn btn-info" href="/search?search={{.MyVar.Search}}&optradio={{$i}}&slide=true&all">Activate Slide Show</a>
 {{end}}
 <br><br>
 {{end}}
@@ -51,10 +51,10 @@
 <div class="container">
 <div class="col-md-8">
 {{if .MyVar.Prev}}
-<a class="btn btn-info float-left" href="/search?search_desc={{.MyVar.Searches.SearchDesc}}&search_loc={{.MyVar.Searches.SearchLocation}}&search_date={{.MyVar.Searches.SearchDate}}&optradio={{$i}}&page={{red .MyVar.PageNumber}}">Previous Page</a>
+<a class="btn btn-info float-left" href="/search?search={{.MyVar.Search}}&optradio={{$i}}&page={{red .MyVar.PageNumber}}">Previous Page</a>
 {{end}}
 {{if .MyVar.Next}}
-<a class="btn btn-info float-right" href="/search?search_desc={{.MyVar.Searches.SearchDesc}}&search_loc={{.MyVar.Searches.SearchLocation}}&search_date={{.MyVar.Searches.SearchDate}}&optradio={{$i}}&page={{add .MyVar.PageNumber}}">Next Page</a>
+<a class="btn btn-info float-right" href="/search?search={{.MyVar.Search}}&optradio={{$i}}&page={{add .MyVar.PageNumber}}">Next Page</a>
 {{end}}
 </div>
 </div>

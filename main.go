@@ -36,12 +36,6 @@ var Data struct {
 	Scharbel   ScharbelTime
 }
 
-type SearchTypes struct {
-	SearchLocation string
-	SearchDesc     string
-	SearchDate     string
-}
-
 type ScharbelTime struct {
 	Years   int
 	Months  int
