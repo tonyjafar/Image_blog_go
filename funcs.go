@@ -270,9 +270,9 @@ type SentVars struct {
 	ListMem    []string
 	ListStart  int
 	ListEnd    int
-	Search     string
 	ImVi       []string
 	Slide      bool
+	Searches   SearchTypes
 }
 
 var imageSlice = 30
@@ -287,7 +287,9 @@ func pageIt(w http.ResponseWriter, s *SentVars, r *http.Request, l []string, v b
 	s.ListLength = t
 	r.ParseForm()
 	page := r.FormValue("page")
-	s.Search = r.FormValue("search")
+	s.Searches.SearchDesc = r.FormValue("search_desc")
+	s.Searches.SearchLocation = r.FormValue("search_loc")
+	s.Searches.SearchDate = r.FormValue("search_date")
 	s.ImVi = r.Form["optradio"]
 	slide := r.FormValue("slide")
 	if len(s.ImVi) == 0 {
