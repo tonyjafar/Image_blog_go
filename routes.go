@@ -321,327 +321,56 @@ func search(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost || strings.Contains(r.RequestURI, "page") || strings.Contains(r.RequestURI, "all") {
 		video := &v
 		r.ParseForm()
-		sd := r.FormValue("search_desc")
-		sl := r.FormValue("search_loc")
-		sDate := r.FormValue("search_date")
+		s := r.FormValue("search")
 		rad := r.Form["optradio"]
-		if sl == "" && sd == "" && sDate == "" {
+		if s == "" {
 			tpl.ExecuteTemplate(w, "search.gohtml", SentData)
 			return
 		}
-		if sl != "" && sd != "" && sDate != "" {
-			var query string
-			firstLike := "%" + sd + "%"
-			secondLike := "%" + sl + "%"
-			thirdLike := "%" + sDate + "%"
-
-			if len(rad) > 0 {
-				if rad[0] == "video" {
-					query = `SELECT name FROM
-					image_blog.videos
-					WHERE description LIKE ?
-					AND location LIKE ?
-					AND created_at LIKE ?
-					ORDER BY created_at DESC`
-					*video = true
-				} else {
-					query = `SELECT name FROM
-					image_blog.images
-					WHERE description LIKE ?
-					AND location LIKE ?
-					AND created_at LIKE ?
-					ORDER BY created_at DESC`
-					*video = false
-				}
+		newQuery := "%" + s + "%"
+		var query string
+		if len(rad) > 0 {
+			if rad[0] == "video" {
+				query = `SELECT name FROM
+				image_blog.videos
+				WHERE description LIKE ?
+				ORDER BY created_at DESC`
+				*video = true
 			} else {
 				query = `SELECT name FROM
-					image_blog.images
-					WHERE description LIKE ?
-					AND location LIKE ?
-					AND created_at LIKE ?
-					ORDER BY created_at DESC`
+				image_blog.images
+				WHERE description LIKE ?
+				ORDER BY created_at DESC`
 				*video = false
 			}
-			rows, err := db.Query(query, firstLike, secondLike, thirdLike)
-			if err != nil {
-				log.Printf(err.Error())
-				return
-			}
-			var name string
-			for rows.Next() {
-				err := rows.Scan(&name)
-				if err != nil {
-					log.Printf(err.Error())
-					return
-				}
-				List = append(List, name)
-			}
-			SentData.List = List
-
-		} else if sl != "" && sd != "" {
-			var query string
-			firstLike := "%" + sd + "%"
-			secondLike := "%" + sl + "%"
-
-			if len(rad) > 0 {
-				if rad[0] == "video" {
-					query = `SELECT name FROM
-					image_blog.videos
-					WHERE description LIKE ?
-					AND location LIKE ?
-					ORDER BY created_at DESC`
-					*video = true
-				} else {
-					query = `SELECT name FROM
-					image_blog.images
-					WHERE description LIKE ?
-					AND location LIKE ?
-					ORDER BY created_at DESC`
-					*video = false
-				}
-			} else {
-				query = `SELECT name FROM
-					image_blog.images
-					WHERE description LIKE ?
-					AND location LIKE ?
-					ORDER BY created_at DESC`
-				*video = false
-			}
-			rows, err := db.Query(query, firstLike, secondLike)
-			if err != nil {
-				log.Printf(err.Error())
-				return
-			}
-			var name string
-			for rows.Next() {
-				err := rows.Scan(&name)
-				if err != nil {
-					log.Printf(err.Error())
-					return
-				}
-				List = append(List, name)
-			}
-			SentData.List = List
-
-		} else if sDate != "" && sd != "" {
-			var query string
-			firstLike := "%" + sd + "%"
-			secondLike := "%" + sDate + "%"
-
-			if len(rad) > 0 {
-				if rad[0] == "video" {
-					query = `SELECT name FROM
-					image_blog.videos
-					WHERE description LIKE ?
-					AND created_at LIKE ?
-					ORDER BY created_at DESC`
-					*video = true
-				} else {
-					query = `SELECT name FROM
-					image_blog.images
-					WHERE description LIKE ?
-					AND created_at LIKE ?
-					ORDER BY created_at DESC`
-					*video = false
-				}
-			} else {
-				query = `SELECT name FROM
-					image_blog.images
-					WHERE description LIKE ?
-					AND created_at LIKE ?
-					ORDER BY created_at DESC`
-				*video = false
-			}
-			rows, err := db.Query(query, firstLike, secondLike)
-			if err != nil {
-				log.Printf(err.Error())
-				return
-			}
-			var name string
-			for rows.Next() {
-				err := rows.Scan(&name)
-				if err != nil {
-					log.Printf(err.Error())
-					return
-				}
-				List = append(List, name)
-			}
-			SentData.List = List
-
-		} else if sDate != "" && sl != "" {
-			var query string
-			firstLike := "%" + sl + "%"
-			secondLike := "%" + sDate + "%"
-
-			if len(rad) > 0 {
-				if rad[0] == "video" {
-					query = `SELECT name FROM
-					image_blog.videos
-					WHERE location LIKE ?
-					AND created_at LIKE ?
-					ORDER BY created_at DESC`
-					*video = true
-				} else {
-					query = `SELECT name FROM
-					image_blog.images
-					WHERE location LIKE ?
-					AND created_at LIKE ?
-					ORDER BY created_at DESC`
-					*video = false
-				}
-			} else {
-				query = `SELECT name FROM
-					image_blog.images
-					WHERE location LIKE ?
-					AND created_at LIKE ?
-					ORDER BY created_at DESC`
-				*video = false
-			}
-			rows, err := db.Query(query, firstLike, secondLike)
-			if err != nil {
-				log.Printf(err.Error())
-				return
-			}
-			var name string
-			for rows.Next() {
-				err := rows.Scan(&name)
-				if err != nil {
-					log.Printf(err.Error())
-					return
-				}
-				List = append(List, name)
-			}
-			SentData.List = List
-
-		} else if sd != "" {
-			var query string
-			firstLike := "%" + sd + "%"
-
-			if len(rad) > 0 {
-				if rad[0] == "video" {
-					query = `SELECT name FROM
-					image_blog.videos
-					WHERE description LIKE ?
-					ORDER BY created_at DESC`
-					*video = true
-				} else {
-					query = `SELECT name FROM
-					image_blog.images
-					WHERE description LIKE ?
-					ORDER BY created_at DESC`
-					*video = false
-				}
-			} else {
-				query = `SELECT name FROM
-					image_blog.images
-					WHERE description LIKE ?
-					ORDER BY created_at DESC`
-				*video = false
-			}
-			rows, err := db.Query(query, firstLike)
-			if err != nil {
-				log.Printf(err.Error())
-				return
-			}
-			var name string
-			for rows.Next() {
-				err := rows.Scan(&name)
-				if err != nil {
-					log.Printf(err.Error())
-					return
-				}
-				List = append(List, name)
-			}
-			SentData.List = List
-
-		} else if sl != "" {
-			var query string
-			firstLike := "%" + sl + "%"
-
-			if len(rad) > 0 {
-				if rad[0] == "video" {
-					query = `SELECT name FROM
-					image_blog.videos
-					WHERE location LIKE ?
-					ORDER BY created_at DESC`
-					*video = true
-				} else {
-					query = `SELECT name FROM
-					image_blog.images
-					WHERE location LIKE ?
-					ORDER BY created_at DESC`
-					*video = false
-				}
-			} else {
-				query = `SELECT name FROM
-					image_blog.images
-					WHERE location LIKE ?
-					ORDER BY created_at DESC`
-				*video = false
-			}
-			rows, err := db.Query(query, firstLike)
-			if err != nil {
-				log.Printf(err.Error())
-				return
-			}
-			var name string
-			for rows.Next() {
-				err := rows.Scan(&name)
-				if err != nil {
-					log.Printf(err.Error())
-					return
-				}
-				List = append(List, name)
-			}
-			SentData.List = List
-
-		} else if sDate != "" {
-			var query string
-			firstLike := "%" + sDate + "%"
-
-			if len(rad) > 0 {
-				if rad[0] == "video" {
-					query = `SELECT name FROM
-					image_blog.videos
-					WHERE created_at LIKE ?
-					ORDER BY created_at DESC`
-					*video = true
-				} else {
-					query = `SELECT name FROM
-					image_blog.images
-					WHERE created_at LIKE ?
-					ORDER BY created_at DESC`
-					*video = false
-				}
-			} else {
-				query = `SELECT name FROM
-					image_blog.images
-					WHERE created_at LIKE ?
-					ORDER BY created_at DESC`
-				*video = false
-			}
-			rows, err := db.Query(query, firstLike)
-			if err != nil {
-				log.Printf(err.Error())
-				return
-			}
-			var name string
-			for rows.Next() {
-				err := rows.Scan(&name)
-				if err != nil {
-					log.Printf(err.Error())
-					return
-				}
-				List = append(List, name)
-			}
-			SentData.List = List
-
+		} else {
+			query = `SELECT name FROM
+				image_blog.images
+				WHERE description LIKE ?
+				ORDER BY created_at DESC`
+			*video = false
 		}
 
+		rows, err := db.Query(query, newQuery)
+		if err != nil {
+			log.Printf(err.Error())
+			return
+		}
+		var name string
+		for rows.Next() {
+			err := rows.Scan(&name)
+			if err != nil {
+				log.Printf(err.Error())
+				return
+			}
+			List = append(List, name)
+		}
+		SentData.List = List
 	}
 	pageIt(w, &SentData.MyVar, r, SentData.List, v)
 	tpl.ExecuteTemplate(w, "search.gohtml", &SentData)
 	return
+
 }
 
 func addVideo(w http.ResponseWriter, r *http.Request) {
