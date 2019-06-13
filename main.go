@@ -26,7 +26,7 @@ var Data struct {
 	Nofile     bool
 	ErrorFile  FileError
 	UserError  bool
-	List       []string
+	ImageDatas []ImageData
 	MyVar      SentVars
 	Username   string
 	Statics    AdminStatics
@@ -36,6 +36,10 @@ var Data struct {
 	Scharbel   ScharbelTime
 }
 
+type ImageData struct {
+	Name string
+	Date string
+}
 type SearchTypes struct {
 	SearchLocation string
 	SearchDesc     string
