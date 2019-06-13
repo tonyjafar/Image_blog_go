@@ -218,7 +218,7 @@ func TestInfoQuery(t *testing.T) {
 func TestSearch(t *testing.T) {
 	cookieToSet := "XXX,admin"
 	form := url.Values{}
-	form.Add("search", "test upload")
+	form.Add("search_desc", "test upload")
 	req, err := http.NewRequest("POST", "/search", strings.NewReader(form.Encode()))
 	if err != nil {
 		t.Fatal(err.Error())
