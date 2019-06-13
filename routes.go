@@ -19,8 +19,9 @@ import (
 
 func index(w http.ResponseWriter, r *http.Request) {
 	SentData := &Data
+	SentData.ImageDatas = nil
 	c, err := r.Cookie("session")
-	List := []string{}
+
 	if err == nil {
 		c.MaxAge = cAge
 		http.SetCookie(w, c)
@@ -30,7 +31,7 @@ func index(w http.ResponseWriter, r *http.Request) {
 	if loggedIn(w, r) {
 		rows, err := db.Query(
 			`
-			SELECT name FROM
+			SELECT name,DATE(created_at) FROM
 			image_blog.images
 			ORDER BY created_at DESC
 			LIMIT 6
@@ -40,16 +41,15 @@ func index(w http.ResponseWriter, r *http.Request) {
 			log.Println(err.Error())
 			return
 		}
-		var name string
+		var name, date string
 		for rows.Next() {
-			err := rows.Scan(&name)
+			err := rows.Scan(&name, &date)
 			if err != nil {
 				log.Println(err.Error())
 				return
 			}
-			List = append(List, name)
+			SentData.ImageDatas = append(SentData.ImageDatas, ImageData{name, date})
 		}
-		SentData.List = List
 	}
 	tpl.ExecuteTemplate(w, "index.gohtml", SentData)
 }
@@ -127,6 +127,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 func images(w http.ResponseWriter, r *http.Request) {
 	SentData := &Data
+	SentData.ImageDatas = nil
 	if !loggedIn(w, r) {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
 		return
@@ -141,13 +142,12 @@ func images(w http.ResponseWriter, r *http.Request) {
 	if strings.HasSuffix(r.RequestURI, ".css") {
 		w.Header().Set("Content-Type", "text/css; charset=utf-8")
 	}
-	List := []string{}
 	c.MaxAge = cAge
 	http.SetCookie(w, c)
 	SentData.Loggedin = true
 	rows, err := db.Query(
 		`
-		SELECT name FROM
+		SELECT name,DATE(created_at) FROM
 		image_blog.images
 		ORDER BY created_at DESC
 		`,
@@ -156,17 +156,17 @@ func images(w http.ResponseWriter, r *http.Request) {
 		log.Println(err.Error())
 		return
 	}
-	var name string
+	var name, imgDate string
 	for rows.Next() {
-		err := rows.Scan(&name)
+		err := rows.Scan(&name, &imgDate)
 		if err != nil {
 			log.Println(err.Error())
 			return
 		}
-		List = append(List, name)
+		SentData.ImageDatas = append(SentData.ImageDatas, ImageData{name, imgDate})
 	}
-	SentData.List = List
-	pageIt(w, &SentData.MyVar, r, List, false)
+
+	pageIt(w, &SentData.MyVar, r, SentData.ImageDatas, false)
 	tpl.ExecuteTemplate(w, "images.gohtml", SentData)
 }
 
@@ -298,7 +298,7 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 
 func search(w http.ResponseWriter, r *http.Request) {
 	SentData := &Data
-	SentData.List = []string{}
+	SentData.ImageDatas = nil
 	if !loggedIn(w, r) {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
 		return
@@ -316,7 +316,6 @@ func search(w http.ResponseWriter, r *http.Request) {
 		SentData.Admin = true
 	}
 	c.MaxAge = cAge
-	List := []string{}
 	var v bool
 	if r.Method == http.MethodPost || strings.Contains(r.RequestURI, "page") || strings.Contains(r.RequestURI, "all") {
 		video := &v
@@ -337,7 +336,7 @@ func search(w http.ResponseWriter, r *http.Request) {
 
 			if len(rad) > 0 {
 				if rad[0] == "video" {
-					query = `SELECT name FROM
+					query = `SELECT name,DATE(created_at) FROM
 					image_blog.videos
 					WHERE description LIKE ?
 					AND location LIKE ?
@@ -345,7 +344,7 @@ func search(w http.ResponseWriter, r *http.Request) {
 					ORDER BY created_at DESC`
 					*video = true
 				} else {
-					query = `SELECT name FROM
+					query = `SELECT name,DATE(created_at) FROM
 					image_blog.images
 					WHERE description LIKE ?
 					AND location LIKE ?
@@ -354,7 +353,7 @@ func search(w http.ResponseWriter, r *http.Request) {
 					*video = false
 				}
 			} else {
-				query = `SELECT name FROM
+				query = `SELECT name,DATE(created_at) FROM
 					image_blog.images
 					WHERE description LIKE ?
 					AND location LIKE ?
@@ -367,16 +366,15 @@ func search(w http.ResponseWriter, r *http.Request) {
 				log.Printf(err.Error())
 				return
 			}
-			var name string
+			var name, date string
 			for rows.Next() {
-				err := rows.Scan(&name)
+				err := rows.Scan(&name, &date)
 				if err != nil {
 					log.Printf(err.Error())
 					return
 				}
-				List = append(List, name)
+				SentData.ImageDatas = append(SentData.ImageDatas, ImageData{name, date})
 			}
-			SentData.List = List
 
 		} else if sl != "" && sd != "" {
 			var query string
@@ -385,14 +383,14 @@ func search(w http.ResponseWriter, r *http.Request) {
 
 			if len(rad) > 0 {
 				if rad[0] == "video" {
-					query = `SELECT name FROM
+					query = `SELECT name,DATE(created_at) FROM
 					image_blog.videos
 					WHERE description LIKE ?
 					AND location LIKE ?
 					ORDER BY created_at DESC`
 					*video = true
 				} else {
-					query = `SELECT name FROM
+					query = `SELECT name,DATE(created_at) FROM
 					image_blog.images
 					WHERE description LIKE ?
 					AND location LIKE ?
@@ -400,7 +398,7 @@ func search(w http.ResponseWriter, r *http.Request) {
 					*video = false
 				}
 			} else {
-				query = `SELECT name FROM
+				query = `SELECT name,DATE(created_at) FROM
 					image_blog.images
 					WHERE description LIKE ?
 					AND location LIKE ?
@@ -412,16 +410,15 @@ func search(w http.ResponseWriter, r *http.Request) {
 				log.Printf(err.Error())
 				return
 			}
-			var name string
+			var name, date string
 			for rows.Next() {
 				err := rows.Scan(&name)
 				if err != nil {
 					log.Printf(err.Error())
 					return
 				}
-				List = append(List, name)
+				SentData.ImageDatas = append(SentData.ImageDatas, ImageData{name, date})
 			}
-			SentData.List = List
 
 		} else if sDate != "" && sd != "" {
 			var query string
@@ -430,14 +427,14 @@ func search(w http.ResponseWriter, r *http.Request) {
 
 			if len(rad) > 0 {
 				if rad[0] == "video" {
-					query = `SELECT name FROM
+					query = `SELECT name,DATE(created_at) FROM
 					image_blog.videos
 					WHERE description LIKE ?
 					AND created_at LIKE ?
 					ORDER BY created_at DESC`
 					*video = true
 				} else {
-					query = `SELECT name FROM
+					query = `SELECT name,DATE(created_at) FROM
 					image_blog.images
 					WHERE description LIKE ?
 					AND created_at LIKE ?
@@ -445,7 +442,7 @@ func search(w http.ResponseWriter, r *http.Request) {
 					*video = false
 				}
 			} else {
-				query = `SELECT name FROM
+				query = `SELECT name,DATE(created_at) FROM
 					image_blog.images
 					WHERE description LIKE ?
 					AND created_at LIKE ?
@@ -457,16 +454,15 @@ func search(w http.ResponseWriter, r *http.Request) {
 				log.Printf(err.Error())
 				return
 			}
-			var name string
+			var name, date string
 			for rows.Next() {
-				err := rows.Scan(&name)
+				err := rows.Scan(&name, &date)
 				if err != nil {
 					log.Printf(err.Error())
 					return
 				}
-				List = append(List, name)
+				SentData.ImageDatas = append(SentData.ImageDatas, ImageData{name, date})
 			}
-			SentData.List = List
 
 		} else if sDate != "" && sl != "" {
 			var query string
@@ -475,14 +471,14 @@ func search(w http.ResponseWriter, r *http.Request) {
 
 			if len(rad) > 0 {
 				if rad[0] == "video" {
-					query = `SELECT name FROM
+					query = `SELECT name,DATE(created_at) FROM
 					image_blog.videos
 					WHERE location LIKE ?
 					AND created_at LIKE ?
 					ORDER BY created_at DESC`
 					*video = true
 				} else {
-					query = `SELECT name FROM
+					query = `SELECT name,DATE(created_at) FROM
 					image_blog.images
 					WHERE location LIKE ?
 					AND created_at LIKE ?
@@ -490,7 +486,7 @@ func search(w http.ResponseWriter, r *http.Request) {
 					*video = false
 				}
 			} else {
-				query = `SELECT name FROM
+				query = `SELECT name,DATE(created_at) FROM
 					image_blog.images
 					WHERE location LIKE ?
 					AND created_at LIKE ?
@@ -502,16 +498,15 @@ func search(w http.ResponseWriter, r *http.Request) {
 				log.Printf(err.Error())
 				return
 			}
-			var name string
+			var name, date string
 			for rows.Next() {
-				err := rows.Scan(&name)
+				err := rows.Scan(&name, &date)
 				if err != nil {
 					log.Printf(err.Error())
 					return
 				}
-				List = append(List, name)
+				SentData.ImageDatas = append(SentData.ImageDatas, ImageData{name, date})
 			}
-			SentData.List = List
 
 		} else if sd != "" {
 			var query string
@@ -519,20 +514,20 @@ func search(w http.ResponseWriter, r *http.Request) {
 
 			if len(rad) > 0 {
 				if rad[0] == "video" {
-					query = `SELECT name FROM
+					query = `SELECT name,DATE(created_at) FROM
 					image_blog.videos
 					WHERE description LIKE ?
 					ORDER BY created_at DESC`
 					*video = true
 				} else {
-					query = `SELECT name FROM
+					query = `SELECT name,DATE(created_at) FROM
 					image_blog.images
 					WHERE description LIKE ?
 					ORDER BY created_at DESC`
 					*video = false
 				}
 			} else {
-				query = `SELECT name FROM
+				query = `SELECT name,DATE(created_at) FROM
 					image_blog.images
 					WHERE description LIKE ?
 					ORDER BY created_at DESC`
@@ -543,16 +538,15 @@ func search(w http.ResponseWriter, r *http.Request) {
 				log.Printf(err.Error())
 				return
 			}
-			var name string
+			var name, date string
 			for rows.Next() {
-				err := rows.Scan(&name)
+				err := rows.Scan(&name, &date)
 				if err != nil {
 					log.Printf(err.Error())
 					return
 				}
-				List = append(List, name)
+				SentData.ImageDatas = append(SentData.ImageDatas, ImageData{name, date})
 			}
-			SentData.List = List
 
 		} else if sl != "" {
 			var query string
@@ -560,20 +554,20 @@ func search(w http.ResponseWriter, r *http.Request) {
 
 			if len(rad) > 0 {
 				if rad[0] == "video" {
-					query = `SELECT name FROM
+					query = `SELECT name,DATE(created_at) FROM
 					image_blog.videos
 					WHERE location LIKE ?
 					ORDER BY created_at DESC`
 					*video = true
 				} else {
-					query = `SELECT name FROM
+					query = `SELECT name,DATE(created_at) FROM
 					image_blog.images
 					WHERE location LIKE ?
 					ORDER BY created_at DESC`
 					*video = false
 				}
 			} else {
-				query = `SELECT name FROM
+				query = `SELECT name,DATE(created_at) FROM
 					image_blog.images
 					WHERE location LIKE ?
 					ORDER BY created_at DESC`
@@ -584,16 +578,15 @@ func search(w http.ResponseWriter, r *http.Request) {
 				log.Printf(err.Error())
 				return
 			}
-			var name string
+			var name, date string
 			for rows.Next() {
-				err := rows.Scan(&name)
+				err := rows.Scan(&name, &date)
 				if err != nil {
 					log.Printf(err.Error())
 					return
 				}
-				List = append(List, name)
+				SentData.ImageDatas = append(SentData.ImageDatas, ImageData{name, date})
 			}
-			SentData.List = List
 
 		} else if sDate != "" {
 			var query string
@@ -601,20 +594,20 @@ func search(w http.ResponseWriter, r *http.Request) {
 
 			if len(rad) > 0 {
 				if rad[0] == "video" {
-					query = `SELECT name FROM
+					query = `SELECT name,DATE(created_at) FROM
 					image_blog.videos
 					WHERE created_at LIKE ?
 					ORDER BY created_at DESC`
 					*video = true
 				} else {
-					query = `SELECT name FROM
+					query = `SELECT name,DATE(created_at) FROM
 					image_blog.images
 					WHERE created_at LIKE ?
 					ORDER BY created_at DESC`
 					*video = false
 				}
 			} else {
-				query = `SELECT name FROM
+				query = `SELECT name,DATE(created_at) FROM
 					image_blog.images
 					WHERE created_at LIKE ?
 					ORDER BY created_at DESC`
@@ -625,21 +618,20 @@ func search(w http.ResponseWriter, r *http.Request) {
 				log.Printf(err.Error())
 				return
 			}
-			var name string
+			var name, date string
 			for rows.Next() {
-				err := rows.Scan(&name)
+				err := rows.Scan(&name, &date)
 				if err != nil {
 					log.Printf(err.Error())
 					return
 				}
-				List = append(List, name)
+				SentData.ImageDatas = append(SentData.ImageDatas, ImageData{name, date})
 			}
-			SentData.List = List
 
 		}
 
 	}
-	pageIt(w, &SentData.MyVar, r, SentData.List, v)
+	pageIt(w, &SentData.MyVar, r, SentData.ImageDatas, v)
 	tpl.ExecuteTemplate(w, "search.gohtml", &SentData)
 	return
 }
@@ -732,6 +724,7 @@ func addVideo(w http.ResponseWriter, r *http.Request) {
 
 func videos(w http.ResponseWriter, r *http.Request) {
 	SentData := &Data
+	SentData.ImageDatas = nil
 	if !loggedIn(w, r) {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
 		return
@@ -741,14 +734,13 @@ func videos(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
 		return
 	}
-	List := []string{}
 	c.MaxAge = cAge
 	http.SetCookie(w, c)
 	username := strings.Split(c.Value, ",")[1]
 	isAdmin(username)
 	rows, err := db.Query(
 		`
-		SELECT name FROM
+		SELECT name,DATE(created_at) FROM
 		image_blog.videos
 		ORDER BY created_at DESC
 		`,
@@ -757,17 +749,16 @@ func videos(w http.ResponseWriter, r *http.Request) {
 		log.Println(err.Error())
 		return
 	}
-	var name string
+	var name, date string
 	for rows.Next() {
-		err := rows.Scan(&name)
+		err := rows.Scan(&name, &date)
 		if err != nil {
 			log.Println(err.Error())
 			return
 		}
-		List = append(List, name)
+		SentData.ImageDatas = append(SentData.ImageDatas, ImageData{name, date})
 	}
-	SentData.List = List
-	pageIt(w, &SentData.MyVar, r, List, true)
+	pageIt(w, &SentData.MyVar, r, SentData.ImageDatas, true)
 	tpl.ExecuteTemplate(w, "videos.gohtml", SentData)
 
 }

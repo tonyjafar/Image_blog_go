@@ -46,7 +46,7 @@
 <div class="row">
 {{range .MyVar.ListMem}}
 {{ if eq  $i "image"}}
-<a href="/assets/{{.}}"  data-toggle="lightbox" data-gallery="my-gal" class="col-sm-4"><img src="/assets/thumb/{{.}}" class="img-fluid img-thumbnail"></a>
+<a href="/assets/{{.Name}}"  data-toggle="lightbox" data-gallery="my-gal" class="col-sm-4"><figure><img src="/assets/thumb/{{.Name}}" class="img-fluid img-thumbnail"><figcaption>{{.Date}}</figcaption></figure></a>
 {{else}}
 <video class="col-sm-4" width="400" height="400" controls>
 <source src="/assets/videos/{{.}}" type="video/mp4">

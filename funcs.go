@@ -267,7 +267,7 @@ type SentVars struct {
 	PageNumber int
 	Next       bool
 	Prev       bool
-	ListMem    []string
+	ListMem    []ImageData
 	ListStart  int
 	ListEnd    int
 	ImVi       []string
@@ -277,7 +277,7 @@ type SentVars struct {
 
 var imageSlice = 30
 
-func pageIt(w http.ResponseWriter, s *SentVars, r *http.Request, l []string, v bool) {
+func pageIt(w http.ResponseWriter, s *SentVars, r *http.Request, l []ImageData, v bool) {
 	if v {
 		imageSlice = 6
 	} else {
