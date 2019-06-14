@@ -238,13 +238,13 @@ func TestSearch(t *testing.T) {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusOK)
 	}
-	if len(Data.List) != 1 {
-		t.Errorf("List length should be 1 but get %v", len(Data.List))
+	if len(Data.ImageDatas) != 1 {
+		t.Errorf("List length should be 1 but get %v", len(Data.ImageDatas))
 	}
 	var myImage string
 	db.QueryRow("select name from image_blog.images where description=\"test upload\"").Scan(&myImage)
-	if Data.List[0] != myImage {
-		t.Errorf("getting %s but expected %s", Data.List[0], myImage)
+	if Data.ImageDatas[0].Name != myImage {
+		t.Errorf("getting %s but expected %s", Data.ImageDatas[0], myImage)
 	}
 	if Data.MyVar.PageNumber != 1 {
 		t.Errorf("got %v expected 1", Data.MyVar.PageNumber)
