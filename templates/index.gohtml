@@ -24,7 +24,7 @@
 <br>
 </div>
 {{range .ImageDatas}}
-<a href="/assets/{{.Name}}"  data-toggle="lightbox" data-gallery="my-gal" class="col-sm-4"><figure><img src="/assets/thumb/{{.Name}}" class="img-fluid img-thumbnail"><figcaption>{{.Date}}</figcaption></figure></a>
+<a href="/assets/{{.Name}}"  data-toggle="lightbox" data-gallery="my-gal" class="col-sm-4"><figure><img src="/assets/thumb/{{.Name}}" class="img-fluid img-thumbnail"><figcaption>{{.Date}} - {{.Location}}</figcaption></figure></a>
 {{end}}
 {{end}}
 </div>

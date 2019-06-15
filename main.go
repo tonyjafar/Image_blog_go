@@ -37,8 +37,9 @@ var Data struct {
 }
 
 type ImageData struct {
-	Name string
-	Date string
+	Name     string
+	Date     string
+	Location string
 }
 type SearchTypes struct {
 	SearchLocation string
