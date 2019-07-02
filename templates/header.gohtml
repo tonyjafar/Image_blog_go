@@ -37,9 +37,11 @@
         <a class="nav-item nav-link" href="/signin">Sign In</a>
         {{end}}
         {{if eq .Admin true}}
+        <div class="admin">
         <a class="btn btn-outline-success" href="/add_image">Add Images</a>
         <a class="btn btn-outline-success" href="/add_video">Add Videos</a>
         <a class="btn btn-outline-success" href="/admin">Admin</a>
+        </div>
         {{end}}
     </div>
   </div>
