@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"regexp"
@@ -141,7 +140,7 @@ func executeQuery(w http.ResponseWriter, query string, schema graphql.Schema) *g
 		RequestString: query,
 	})
 	if len(result.Errors) > 0 {
-		log.Printf("errors: %v", result.Errors)
+		log.Errorf("errors: %v", result.Errors)
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("400 - Bad Request!\n"))
 	}
@@ -187,7 +186,7 @@ func loggedIn(w http.ResponseWriter, r *http.Request) bool {
 		return false
 	}
 	if setRetry >= 5 {
-		log.Printf("User %s is blocked", username)
+		log.Criticalf("User %s is blocked", username)
 		SentData.Loggedin = false
 		SentData.Admin = false
 		return false
@@ -206,30 +205,30 @@ func loggedIn(w http.ResponseWriter, r *http.Request) bool {
 }
 
 func lastActivity() {
-	log.Println("DB Clean up Started")
+	log.Debug("DB Clean up Started")
 	timeFormat := "2006-01-02 15:04:05"
 	var username string
 	var lastActivityTime string
 	allUsers, err := db.Query("select username, last_activity from image_blog.Users where session is NOT NULL")
 	if err != nil {
-		log.Println(err.Error())
+		log.Error(err.Error())
 	}
 	for allUsers.Next() {
 		err := allUsers.Scan(&username, &lastActivityTime)
 		if err != nil {
-			log.Fatal(err.Error())
+			log.Error(err.Error())
 			return
 		}
 		sessionTime, err := time.Parse(timeFormat, lastActivityTime)
 		if err != nil {
-			fmt.Println(err.Error())
+			log.Error(err.Error())
 		}
 		timeAfterLastLogin := time.Since(sessionTime).Seconds()
 		if timeAfterLastLogin > float64(cAge) {
 			db.Exec("update image_blog.Users set session = NULL where username = ?", username)
 		}
 	}
-	log.Println("DB Clean up Finished")
+	log.Debug("DB Clean up Finished")
 	time.Sleep(24 * time.Hour) //run every one day
 	lastActivity()
 }
@@ -382,7 +381,7 @@ func getAndUpdateRetry(u string) (bool, error) {
 		u,
 	)
 	if setRetry >= 5 {
-		log.Printf("User %s is blocked", u)
+		log.Criticalf("User %s is blocked", u)
 		return true, dbErr
 	}
 	return false, dbErr

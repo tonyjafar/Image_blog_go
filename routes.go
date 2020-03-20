@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -38,14 +37,14 @@ func index(w http.ResponseWriter, r *http.Request) {
 			`,
 		)
 		if err != nil {
-			log.Println(err.Error())
+			log.Error(err.Error())
 			return
 		}
 		var name, date, location string
 		for rows.Next() {
 			err := rows.Scan(&name, &date, &location)
 			if err != nil {
-				log.Println(err.Error())
+				log.Error(err.Error())
 				return
 			}
 			SentData.ImageDatas = append(SentData.ImageDatas, ImageData{name, date, location})
@@ -83,7 +82,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 		blocked, err := getAndUpdateRetry(un)
 		if err != nil {
 			SentData.UserError = true
-			log.Printf("Unable to connect to databese to determine the status of the User - %s", err.Error())
+			log.Errorf("Unable to connect to databese to determine the status of the User - %s", err.Error())
 			tpl.ExecuteTemplate(w, "signin.gohtml", SentData)
 			return
 		}
@@ -105,18 +104,18 @@ func login(w http.ResponseWriter, r *http.Request) {
 			err := updateUserSession(s.String(), un)
 			if err != nil {
 				SentData.UserError = true
-				log.Printf("Can not update the user session after login - %s", err.Error())
+				log.Errorf("Can not update the user session after login - %s", err.Error())
 				tpl.ExecuteTemplate(w, "signin.gohtml", SentData)
 				return
 			}
-			log.Printf("User %s logged in", un)
+			log.Infof("User %s logged in", un)
 			SentData.Username = un
 			isAdmin(un)
 			SentData.Loggedin = true
 			http.Redirect(w, r, "/images", http.StatusSeeOther)
 			return
 		} else {
-			log.Printf("Authentication Failed!! - using username %s", un)
+			log.Errorf("Authentication Failed!! - using username %s", un)
 			SentData.UserError = true
 			tpl.ExecuteTemplate(w, "signin.gohtml", SentData)
 			return
@@ -153,14 +152,14 @@ func images(w http.ResponseWriter, r *http.Request) {
 		`,
 	)
 	if err != nil {
-		log.Println(err.Error())
+		log.Error(err.Error())
 		return
 	}
 	var name, imgDate, location string
 	for rows.Next() {
 		err := rows.Scan(&name, &imgDate, &location)
 		if err != nil {
-			log.Println(err.Error())
+			log.Error(err.Error())
 			return
 		}
 		SentData.ImageDatas = append(SentData.ImageDatas, ImageData{name, imgDate, location})
@@ -191,7 +190,7 @@ func signout(w http.ResponseWriter, r *http.Request) {
 		`,
 		username,
 	)
-	log.Printf("User %s logged out", username)
+	log.Infof("User %s logged out", username)
 	SentData.Admin = false
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 	return
@@ -234,7 +233,7 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 			if !checkFileName(fhm.Filename) {
 				SentData.ErrorFile.IsError = true
 				SentData.ErrorFile.ErrorType = "File name does not contian extension"
-				log.Printf("File %s name error", fhm.Filename)
+				log.Errorf("File %s name error", fhm.Filename)
 				tpl.ExecuteTemplate(w, "uplimage.gohtml", SentData)
 				return
 			}
@@ -244,7 +243,7 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 			n := fmt.Sprintf("%x", h.Sum(nil)) + "." + ext
 			wd, err := os.Getwd()
 			if err != nil {
-				log.Println(err.Error())
+				log.Error(err.Error())
 				SentData.ErrorFile.IsError = true
 				SentData.ErrorFile.ErrorType = err.Error()
 				tpl.ExecuteTemplate(w, "uplimage.gohtml", SentData)
@@ -254,7 +253,7 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 			nf, err := os.Create(path)
 			defer nf.Close()
 			if err != nil {
-				log.Println(err.Error())
+				log.Error(err.Error())
 				SentData.ErrorFile.IsError = true
 				SentData.ErrorFile.ErrorType = "Create Path"
 				tpl.ExecuteTemplate(w, "uplimage.gohtml", SentData)
@@ -265,7 +264,7 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 			image := &Image{n, l, s, tn, d}
 			scrImage, err := imaging.Open("./data/" + image.Name)
 			if err != nil {
-				log.Println(err.Error())
+				log.Error(err.Error())
 				mf.Close()
 				nf.Close()
 				os.Remove(path)
@@ -363,14 +362,14 @@ func search(w http.ResponseWriter, r *http.Request) {
 			}
 			rows, err := db.Query(query, firstLike, secondLike, thirdLike)
 			if err != nil {
-				log.Printf(err.Error())
+				log.Error(err.Error())
 				return
 			}
 			var name, date, location string
 			for rows.Next() {
 				err := rows.Scan(&name, &date, &location)
 				if err != nil {
-					log.Printf(err.Error())
+					log.Error(err.Error())
 					return
 				}
 				SentData.ImageDatas = append(SentData.ImageDatas, ImageData{name, date, location})
@@ -407,14 +406,14 @@ func search(w http.ResponseWriter, r *http.Request) {
 			}
 			rows, err := db.Query(query, firstLike, secondLike)
 			if err != nil {
-				log.Printf(err.Error())
+				log.Error(err.Error())
 				return
 			}
 			var name, date, location string
 			for rows.Next() {
 				err := rows.Scan(&name, &date, &location)
 				if err != nil {
-					log.Printf(err.Error())
+					log.Error(err.Error())
 					return
 				}
 				SentData.ImageDatas = append(SentData.ImageDatas, ImageData{name, date, location})
@@ -451,14 +450,14 @@ func search(w http.ResponseWriter, r *http.Request) {
 			}
 			rows, err := db.Query(query, firstLike, secondLike)
 			if err != nil {
-				log.Printf(err.Error())
+				log.Error(err.Error())
 				return
 			}
 			var name, date, location string
 			for rows.Next() {
 				err := rows.Scan(&name, &date, &location)
 				if err != nil {
-					log.Printf(err.Error())
+					log.Error(err.Error())
 					return
 				}
 				SentData.ImageDatas = append(SentData.ImageDatas, ImageData{name, date, location})
@@ -495,14 +494,14 @@ func search(w http.ResponseWriter, r *http.Request) {
 			}
 			rows, err := db.Query(query, firstLike, secondLike)
 			if err != nil {
-				log.Printf(err.Error())
+				log.Error(err.Error())
 				return
 			}
 			var name, date, location string
 			for rows.Next() {
 				err := rows.Scan(&name, &date, &location)
 				if err != nil {
-					log.Printf(err.Error())
+					log.Error(err.Error())
 					return
 				}
 				SentData.ImageDatas = append(SentData.ImageDatas, ImageData{name, date, location})
@@ -535,14 +534,14 @@ func search(w http.ResponseWriter, r *http.Request) {
 			}
 			rows, err := db.Query(query, firstLike)
 			if err != nil {
-				log.Printf(err.Error())
+				log.Error(err.Error())
 				return
 			}
 			var name, date, location string
 			for rows.Next() {
 				err := rows.Scan(&name, &date, &location)
 				if err != nil {
-					log.Printf(err.Error())
+					log.Error(err.Error())
 					return
 				}
 				SentData.ImageDatas = append(SentData.ImageDatas, ImageData{name, date, location})
@@ -575,14 +574,14 @@ func search(w http.ResponseWriter, r *http.Request) {
 			}
 			rows, err := db.Query(query, firstLike)
 			if err != nil {
-				log.Printf(err.Error())
+				log.Error(err.Error())
 				return
 			}
 			var name, date, location string
 			for rows.Next() {
 				err := rows.Scan(&name, &date, &location)
 				if err != nil {
-					log.Printf(err.Error())
+					log.Error(err.Error())
 					return
 				}
 				SentData.ImageDatas = append(SentData.ImageDatas, ImageData{name, date, location})
@@ -615,14 +614,14 @@ func search(w http.ResponseWriter, r *http.Request) {
 			}
 			rows, err := db.Query(query, firstLike)
 			if err != nil {
-				log.Printf(err.Error())
+				log.Error(err.Error())
 				return
 			}
 			var name, date, location string
 			for rows.Next() {
 				err := rows.Scan(&name, &date, &location)
 				if err != nil {
-					log.Printf(err.Error())
+					log.Error(err.Error())
 					return
 				}
 				SentData.ImageDatas = append(SentData.ImageDatas, ImageData{name, date, location})
@@ -663,7 +662,7 @@ func addVideo(w http.ResponseWriter, r *http.Request) {
 		for _, fhm := range fhs {
 			mf, err := fhm.Open()
 			if err != nil {
-				log.Printf(err.Error())
+				log.Error(err.Error())
 				SentData.ErrorFile.IsError = true
 				SentData.ErrorFile.ErrorType = err.Error()
 				tpl.ExecuteTemplate(w, "uploadvideo.gohtml", SentData)
@@ -674,7 +673,7 @@ func addVideo(w http.ResponseWriter, r *http.Request) {
 			if !checkFileName(fhm.Filename) {
 				SentData.ErrorFile.IsError = true
 				SentData.ErrorFile.ErrorType = "File name does not contian extension"
-				log.Printf("File %s name error", fhm.Filename)
+				log.Errorf("File %s name error", fhm.Filename)
 				tpl.ExecuteTemplate(w, "uploadvideo.gohtml", SentData)
 				return
 			}
@@ -684,7 +683,7 @@ func addVideo(w http.ResponseWriter, r *http.Request) {
 			n := fmt.Sprintf("%x", h.Sum(nil)) + "." + ext
 			wd, err := os.Getwd()
 			if err != nil {
-				log.Println(err.Error())
+				log.Error(err.Error())
 				SentData.ErrorFile.IsError = true
 				SentData.ErrorFile.ErrorType = err.Error()
 				tpl.ExecuteTemplate(w, "uploadvideo.gohtml", SentData)
@@ -693,7 +692,7 @@ func addVideo(w http.ResponseWriter, r *http.Request) {
 			path := filepath.Join(wd, "data/videos", n)
 			nf, err := os.Create(path)
 			if err != nil {
-				log.Println(err.Error())
+				log.Error(err.Error())
 				SentData.ErrorFile.IsError = true
 				SentData.ErrorFile.ErrorType = err.Error()
 				tpl.ExecuteTemplate(w, "uploadvideo.gohtml", SentData)
@@ -746,14 +745,14 @@ func videos(w http.ResponseWriter, r *http.Request) {
 		`,
 	)
 	if err != nil {
-		log.Println(err.Error())
+		log.Error(err.Error())
 		return
 	}
 	var name, date, location string
 	for rows.Next() {
 		err := rows.Scan(&name, &date, &location)
 		if err != nil {
-			log.Println(err.Error())
+			log.Error(err.Error())
 			return
 		}
 		SentData.ImageDatas = append(SentData.ImageDatas, ImageData{name, date, location})
@@ -871,14 +870,14 @@ func imagesAdmin(w http.ResponseWriter, r *http.Request) {
 				`
 		rows, err := db.Query(query, newQuery)
 		if err != nil {
-			log.Println(err.Error())
+			log.Error(err.Error())
 			return
 		}
 		var name, location, description, createdAt string
 		for rows.Next() {
 			err := rows.Scan(&name, &location, &description, &createdAt)
 			if err != nil {
-				log.Println(err.Error())
+				log.Error(err.Error())
 				return
 			}
 			image := Images{name, location, description, createdAt}
@@ -894,7 +893,7 @@ func imagesAdmin(w http.ResponseWriter, r *http.Request) {
 				`
 	rows, err := db.Query(query)
 	if err != nil {
-		log.Println(err.Error())
+		log.Error(err.Error())
 		return
 	}
 	List := []Images{}
@@ -902,7 +901,7 @@ func imagesAdmin(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		err := rows.Scan(&name, &location, &description, &createdAt)
 		if err != nil {
-			log.Println(err.Error())
+			log.Error(err.Error())
 			return
 		}
 		image := Images{name, location, description, createdAt}
@@ -960,7 +959,7 @@ func imagesAdminEdit(w http.ResponseWriter, r *http.Request) {
 				`
 			rows, err := db.Query(query, name)
 			if err != nil {
-				log.Println(err.Error())
+				log.Error(err.Error())
 				return
 			}
 			List := []Images{}
@@ -968,7 +967,7 @@ func imagesAdminEdit(w http.ResponseWriter, r *http.Request) {
 			for rows.Next() {
 				err := rows.Scan(&name, &location, &description, &createdAt)
 				if err != nil {
-					log.Println(err.Error())
+					log.Error(err.Error())
 					return
 				}
 				image := Images{name, location, description, createdAt}
@@ -1021,14 +1020,14 @@ func videosAdmin(w http.ResponseWriter, r *http.Request) {
 				`
 		rows, err := db.Query(query, newQuery)
 		if err != nil {
-			log.Println(err.Error())
+			log.Error(err.Error())
 			return
 		}
 		var name, location, description, createdAt string
 		for rows.Next() {
 			err := rows.Scan(&name, &location, &description, &createdAt)
 			if err != nil {
-				log.Println(err.Error())
+				log.Error(err.Error())
 				return
 			}
 			image := Images{name, location, description, createdAt}
@@ -1044,7 +1043,7 @@ func videosAdmin(w http.ResponseWriter, r *http.Request) {
 				`
 	rows, err := db.Query(query)
 	if err != nil {
-		log.Println(err.Error())
+		log.Error(err.Error())
 		return
 	}
 	List := []Images{}
@@ -1052,7 +1051,7 @@ func videosAdmin(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		err := rows.Scan(&name, &location, &description, &createdAt)
 		if err != nil {
-			log.Println(err.Error())
+			log.Error(err.Error())
 			return
 		}
 		image := Images{name, location, description, createdAt}
@@ -1110,7 +1109,7 @@ func videosAdminEdit(w http.ResponseWriter, r *http.Request) {
 				`
 			rows, err := db.Query(query, name)
 			if err != nil {
-				log.Println(err.Error())
+				log.Error(err.Error())
 				return
 			}
 			List := []Images{}
@@ -1118,7 +1117,7 @@ func videosAdminEdit(w http.ResponseWriter, r *http.Request) {
 			for rows.Next() {
 				err := rows.Scan(&name, &location, &description, &createdAt)
 				if err != nil {
-					log.Println(err.Error())
+					log.Error(err.Error())
 					return
 				}
 				image := Images{name, location, description, createdAt}
@@ -1171,14 +1170,14 @@ func usersAdmin(w http.ResponseWriter, r *http.Request) {
 				`
 		rows, err := db.Query(query, newQuery)
 		if err != nil {
-			log.Println(err.Error())
+			log.Error(err.Error())
 			return
 		}
 		var userName, admin string
 		for rows.Next() {
 			err := rows.Scan(&userName, &admin)
 			if err != nil {
-				log.Println(err.Error())
+				log.Error(err.Error())
 				return
 			}
 			user := Users{userName, admin}
@@ -1194,7 +1193,7 @@ func usersAdmin(w http.ResponseWriter, r *http.Request) {
 				`
 	rows, err := db.Query(query)
 	if err != nil {
-		log.Println(err.Error())
+		log.Error(err.Error())
 		return
 	}
 	List := []Users{}
@@ -1202,7 +1201,7 @@ func usersAdmin(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		err := rows.Scan(&userName, &admin)
 		if err != nil {
-			log.Println(err.Error())
+			log.Error(err.Error())
 			return
 		}
 		user := Users{userName, admin}
@@ -1318,14 +1317,14 @@ func getInfo(w http.ResponseWriter, r *http.Request) {
 		`,
 	)
 	if err != nil {
-		log.Println(err.Error())
+		log.Error(err.Error())
 		return
 	}
 	var name, location, description, size, created_at string
 	for rows.Next() {
 		err := rows.Scan(&name, &location, &description, &size, &created_at)
 		if err != nil {
-			log.Println(err.Error())
+			log.Error(err.Error())
 			return
 		}
 		ImageInfos = append(ImageInfos, ImageInfo{name, location, description, size, created_at})
