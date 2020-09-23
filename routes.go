@@ -219,17 +219,18 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 			go handelUploadImages(ch, fhm, tn, l, d)
 		}
 		fileErrors := []string{}
-
-		select {
-		case errors := <-ch:
-			if errors.IsError {
+		for range fhs {
+			select {
+			case errors := <-ch:
 				fileErrors = append(fileErrors, errors.ErrorType)
 			}
+
 		}
+
 		if len(fileErrors) > 0 {
 			SentData.ErrorFile.IsError = true
 			SentData.ErrorFile.IsSucc = false
-			SentData.ErrorFile.ErrorType = strings.Join(fileErrors, "\n")
+			SentData.ErrorFile.ErrorType = strings.Join(fileErrors, " ")
 		} else {
 			SentData.ErrorFile.IsError = false
 			SentData.ErrorFile.IsSucc = true
@@ -609,11 +610,12 @@ func addVideo(w http.ResponseWriter, r *http.Request) {
 			go handelUploadVideos(chv, fhm, tn, l, d)
 		}
 		fileErrors := []string{}
-		select {
-		case errors := <-chv:
-			if errors.IsError {
+		for range fhs {
+			select {
+			case errors := <-chv:
 				fileErrors = append(fileErrors, errors.ErrorType)
 			}
+
 		}
 		if len(fileErrors) > 0 {
 			SentData.ErrorFile.IsError = true

@@ -142,10 +142,10 @@ var schema, _ = graphql.NewSchema(
 func handelUploadVideos(chv chan *FileError, fhm *multipart.FileHeader, tn time.Time, l, d string) {
 	mf, err := fhm.Open()
 	if err != nil {
-		log.Error(err.Error())
+		log.Error(err.Error(), fhm.Filename)
 		chv <- &FileError{
 			IsError:   true,
-			ErrorType: err.Error(),
+			ErrorType: fmt.Sprintf("Error %v for the file %v", err.Error(), fhm.Filename),
 			IsSucc:    false,
 		}
 		return
@@ -156,7 +156,7 @@ func handelUploadVideos(chv chan *FileError, fhm *multipart.FileHeader, tn time.
 		log.Errorf("File %s name error", fhm.Filename)
 		chv <- &FileError{
 			IsError:   true,
-			ErrorType: "File name does not contian extension",
+			ErrorType: fmt.Sprintf("File name %v does not contian extension", fhm.Filename),
 			IsSucc:    false,
 		}
 		return
@@ -167,10 +167,10 @@ func handelUploadVideos(chv chan *FileError, fhm *multipart.FileHeader, tn time.
 	n := fmt.Sprintf("%x", h.Sum(nil)) + "." + ext
 	wd, err := os.Getwd()
 	if err != nil {
-		log.Error(err.Error())
+		log.Error("Error %s for the file %s", err.Error(), fhm.Filename)
 		chv <- &FileError{
 			IsError:   true,
-			ErrorType: err.Error(),
+			ErrorType: fmt.Sprintf("Error %v for the file %v", err.Error(), fhm.Filename),
 			IsSucc:    false,
 		}
 		return
@@ -178,10 +178,10 @@ func handelUploadVideos(chv chan *FileError, fhm *multipart.FileHeader, tn time.
 	path := filepath.Join(wd, "data/videos", n)
 	nf, err := os.Create(path)
 	if err != nil {
-		log.Error(err.Error())
+		log.Error("Error %s for the file %s", err.Error(), fhm.Filename)
 		chv <- &FileError{
 			IsError:   true,
-			ErrorType: err.Error(),
+			ErrorType: fmt.Sprintf("Error %v for the file %v", err.Error(), fhm.Filename),
 			IsSucc:    false,
 		}
 		return
@@ -199,7 +199,7 @@ func handelUploadVideos(chv chan *FileError, fhm *multipart.FileHeader, tn time.
 		}
 		chv <- &FileError{
 			IsError:   true,
-			ErrorType: err.Error(),
+			ErrorType: fmt.Sprintf("Error %v for the file %v", err.Error(), fhm.Filename),
 			IsSucc:    false,
 		}
 		return
@@ -214,10 +214,10 @@ func handelUploadVideos(chv chan *FileError, fhm *multipart.FileHeader, tn time.
 func handelUploadImages(ch chan *FileError, fhm *multipart.FileHeader, tn time.Time, l, d string) {
 	mf, err := fhm.Open()
 	if err != nil {
-		log.Error(err.Error())
+		log.Errorf("Error: %s for the file %s", err.Error(), fhm.Filename)
 		ch <- &FileError{
 			IsError:   true,
-			ErrorType: err.Error(),
+			ErrorType: fmt.Sprintf("Error: %v for the file %v", err.Error(), fhm.Filename),
 			IsSucc:    false,
 		}
 		return
@@ -229,7 +229,7 @@ func handelUploadImages(ch chan *FileError, fhm *multipart.FileHeader, tn time.T
 		if err != nil {
 			ch <- &FileError{
 				IsError:   true,
-				ErrorType: "File name does not contian extension",
+				ErrorType: fmt.Sprintf("File name %v does not contian extension", fhm.Filename),
 				IsSucc:    false,
 			}
 			return
@@ -241,10 +241,10 @@ func handelUploadImages(ch chan *FileError, fhm *multipart.FileHeader, tn time.T
 	n := fmt.Sprintf("%x", h.Sum(nil)) + "." + ext
 	wd, err := os.Getwd()
 	if err != nil {
-		log.Error(err.Error())
+		log.Errorf("Error %s for the file %s", err.Error(), fhm.Filename)
 		ch <- &FileError{
 			IsError:   true,
-			ErrorType: err.Error(),
+			ErrorType: fmt.Sprintf("Error %v for the file %v", err.Error(), fhm.Filename),
 			IsSucc:    false,
 		}
 		return
@@ -253,10 +253,10 @@ func handelUploadImages(ch chan *FileError, fhm *multipart.FileHeader, tn time.T
 	nf, err := os.Create(path)
 	defer nf.Close()
 	if err != nil {
-		log.Error(err.Error())
+		log.Error("Error %s for the file %s", err.Error(), fhm.Filename)
 		ch <- &FileError{
 			IsError:   true,
-			ErrorType: err.Error(),
+			ErrorType: fmt.Sprintf("Error %v for the file %v", err.Error(), fhm.Filename),
 			IsSucc:    false,
 		}
 		return
@@ -266,13 +266,13 @@ func handelUploadImages(ch chan *FileError, fhm *multipart.FileHeader, tn time.T
 	image := &Image{n, l, s, tn, d}
 	scrImage, err := imaging.Open("./data/" + image.Name)
 	if err != nil {
-		log.Error(err.Error())
+		log.Error("Error %s for the file %s", err.Error(), fhm.Filename)
 		mf.Close()
 		nf.Close()
 		os.Remove(path)
 		ch <- &FileError{
 			IsError:   true,
-			ErrorType: err.Error(),
+			ErrorType: fmt.Sprintf("Error %v for the file %v", err.Error(), fhm.Filename),
 			IsSucc:    false,
 		}
 		return
@@ -289,7 +289,7 @@ func handelUploadImages(ch chan *FileError, fhm *multipart.FileHeader, tn time.T
 		}
 		ch <- &FileError{
 			IsError:   true,
-			ErrorType: err.Error(),
+			ErrorType: fmt.Sprintf("Error %v for the file %v", err.Error(), fhm.Filename),
 			IsSucc:    false,
 		}
 		return
