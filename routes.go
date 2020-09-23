@@ -1,17 +1,11 @@
 package main
 
 import (
-	"crypto/sha1"
 	"encoding/json"
-	"fmt"
-	"io"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
-	"github.com/disintegration/imaging"
 	uuid "github.com/gofrs/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -220,78 +214,29 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 		l := r.FormValue("location")
 		d := r.FormValue("description")
 		fhs := r.MultipartForm.File["nf"]
+		ch := make(chan *FileError, len(fhs))
 		for _, fhm := range fhs {
-			mf, err := fhm.Open()
-			if err != nil {
-				SentData.ErrorFile.IsError = true
-				SentData.ErrorFile.ErrorType = err.Error()
-				tpl.ExecuteTemplate(w, "uplimage.gohtml", SentData)
-				return
-			}
-			defer mf.Close()
-			s := fhm.Size
-			if !checkFileName(fhm.Filename) {
-				SentData.ErrorFile.IsError = true
-				SentData.ErrorFile.ErrorType = "File name does not contian extension"
-				log.Errorf("File %s name error", fhm.Filename)
-				tpl.ExecuteTemplate(w, "uplimage.gohtml", SentData)
-				return
-			}
-			ext := strings.Split(fhm.Filename, ".")[1]
-			h := sha1.New()
-			io.Copy(h, mf)
-			n := fmt.Sprintf("%x", h.Sum(nil)) + "." + ext
-			wd, err := os.Getwd()
-			if err != nil {
-				log.Error(err.Error())
-				SentData.ErrorFile.IsError = true
-				SentData.ErrorFile.ErrorType = err.Error()
-				tpl.ExecuteTemplate(w, "uplimage.gohtml", SentData)
-				return
-			}
-			path := filepath.Join(wd, "data", n)
-			nf, err := os.Create(path)
-			defer nf.Close()
-			if err != nil {
-				log.Error(err.Error())
-				SentData.ErrorFile.IsError = true
-				SentData.ErrorFile.ErrorType = "Create Path"
-				tpl.ExecuteTemplate(w, "uplimage.gohtml", SentData)
-				return
-			}
-			mf.Seek(0, 0)
-			io.Copy(nf, mf)
-			image := &Image{n, l, s, tn, d}
-			scrImage, err := imaging.Open("./data/" + image.Name)
-			if err != nil {
-				log.Error(err.Error())
-				mf.Close()
-				nf.Close()
-				os.Remove(path)
-				SentData.ErrorFile.IsError = true
-				SentData.ErrorFile.ErrorType = err.Error()
-				tpl.ExecuteTemplate(w, "uplimage.gohtml", SentData)
-				return
-			}
-			i := Save(image)
-			dstImage := imaging.Thumbnail(scrImage, widthThumbnail, widthThumbnail, imaging.Lanczos)
-			destination := "./data/thumb/" + image.Name
-			it := imaging.Save(dstImage, destination)
-			if i != nil && it != nil {
-				te, err := os.Open(path)
-				if err == nil {
-					defer te.Close()
-					os.Remove(path)
-				}
-				SentData.ErrorFile.IsError = true
-				SentData.ErrorFile.ErrorType = err.Error()
-				tpl.ExecuteTemplate(w, "uplimage.gohtml", SentData)
-				return
+			go handelUploadImages(ch, fhm, tn, l, d)
+		}
+		fileErrors := []string{}
+
+		select {
+		case errors := <-ch:
+			if errors.IsError {
+				fileErrors = append(fileErrors, errors.ErrorType)
 			}
 		}
-		SentData.ErrorFile.IsError = false
-		SentData.ErrorFile.IsSucc = true
+		if len(fileErrors) > 0 {
+			SentData.ErrorFile.IsError = true
+			SentData.ErrorFile.IsSucc = false
+			SentData.ErrorFile.ErrorType = strings.Join(fileErrors, "\n")
+		} else {
+			SentData.ErrorFile.IsError = false
+			SentData.ErrorFile.IsSucc = true
+		}
+
 	}
+
 	tpl.ExecuteTemplate(w, "uplimage.gohtml", SentData)
 }
 
@@ -659,64 +604,25 @@ func addVideo(w http.ResponseWriter, r *http.Request) {
 		l := r.FormValue("location")
 		d := r.FormValue("description")
 		fhs := r.MultipartForm.File["nf"]
+		chv := make(chan *FileError, len(fhs))
 		for _, fhm := range fhs {
-			mf, err := fhm.Open()
-			if err != nil {
-				log.Error(err.Error())
-				SentData.ErrorFile.IsError = true
-				SentData.ErrorFile.ErrorType = err.Error()
-				tpl.ExecuteTemplate(w, "uploadvideo.gohtml", SentData)
-				return
-			}
-			defer mf.Close()
-			s := fhm.Size
-			if !checkFileName(fhm.Filename) {
-				SentData.ErrorFile.IsError = true
-				SentData.ErrorFile.ErrorType = "File name does not contian extension"
-				log.Errorf("File %s name error", fhm.Filename)
-				tpl.ExecuteTemplate(w, "uploadvideo.gohtml", SentData)
-				return
-			}
-			ext := strings.Split(fhm.Filename, ".")[1]
-			h := sha1.New()
-			io.Copy(h, mf)
-			n := fmt.Sprintf("%x", h.Sum(nil)) + "." + ext
-			wd, err := os.Getwd()
-			if err != nil {
-				log.Error(err.Error())
-				SentData.ErrorFile.IsError = true
-				SentData.ErrorFile.ErrorType = err.Error()
-				tpl.ExecuteTemplate(w, "uploadvideo.gohtml", SentData)
-				return
-			}
-			path := filepath.Join(wd, "data/videos", n)
-			nf, err := os.Create(path)
-			if err != nil {
-				log.Error(err.Error())
-				SentData.ErrorFile.IsError = true
-				SentData.ErrorFile.ErrorType = err.Error()
-				tpl.ExecuteTemplate(w, "uploadvideo.gohtml", SentData)
-				return
-			}
-			defer nf.Close()
-			mf.Seek(0, 0)
-			io.Copy(nf, mf)
-			video := &Video{n, l, s, tn, d}
-			i := SaveV(video)
-			if i != nil {
-				te, err := os.Open(path)
-				if err == nil {
-					defer te.Close()
-					os.Remove(path)
-				}
-				SentData.ErrorFile.IsError = true
-				SentData.ErrorFile.ErrorType = err.Error()
-				tpl.ExecuteTemplate(w, "uploadvideo.gohtml", SentData)
-				return
+			go handelUploadVideos(chv, fhm, tn, l, d)
+		}
+		fileErrors := []string{}
+		select {
+		case errors := <-chv:
+			if errors.IsError {
+				fileErrors = append(fileErrors, errors.ErrorType)
 			}
 		}
-		SentData.ErrorFile.IsError = false
-		SentData.ErrorFile.IsSucc = true
+		if len(fileErrors) > 0 {
+			SentData.ErrorFile.IsError = true
+			SentData.ErrorFile.IsSucc = false
+			SentData.ErrorFile.ErrorType = strings.Join(fileErrors, "\n")
+		} else {
+			SentData.ErrorFile.IsError = false
+			SentData.ErrorFile.IsSucc = true
+		}
 	}
 	tpl.ExecuteTemplate(w, "uploadvideo.gohtml", SentData)
 }

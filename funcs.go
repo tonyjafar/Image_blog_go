@@ -1,16 +1,21 @@
 package main
 
 import (
+	"crypto/sha1"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"mime/multipart"
 	"net/http"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/disintegration/imaging"
 	"github.com/graphql-go/graphql"
 )
 
@@ -133,6 +138,168 @@ var schema, _ = graphql.NewSchema(
 		Mutation: mutationType,
 	},
 )
+
+func handelUploadVideos(chv chan *FileError, fhm *multipart.FileHeader, tn time.Time, l, d string) {
+	mf, err := fhm.Open()
+	if err != nil {
+		log.Error(err.Error())
+		chv <- &FileError{
+			IsError:   true,
+			ErrorType: err.Error(),
+			IsSucc:    false,
+		}
+		return
+	}
+	defer mf.Close()
+	s := fhm.Size
+	if !checkFileName(fhm.Filename) {
+		log.Errorf("File %s name error", fhm.Filename)
+		chv <- &FileError{
+			IsError:   true,
+			ErrorType: "File name does not contian extension",
+			IsSucc:    false,
+		}
+		return
+	}
+	ext := strings.Split(fhm.Filename, ".")[1]
+	h := sha1.New()
+	io.Copy(h, mf)
+	n := fmt.Sprintf("%x", h.Sum(nil)) + "." + ext
+	wd, err := os.Getwd()
+	if err != nil {
+		log.Error(err.Error())
+		chv <- &FileError{
+			IsError:   true,
+			ErrorType: err.Error(),
+			IsSucc:    false,
+		}
+		return
+	}
+	path := filepath.Join(wd, "data/videos", n)
+	nf, err := os.Create(path)
+	if err != nil {
+		log.Error(err.Error())
+		chv <- &FileError{
+			IsError:   true,
+			ErrorType: err.Error(),
+			IsSucc:    false,
+		}
+		return
+	}
+	defer nf.Close()
+	mf.Seek(0, 0)
+	io.Copy(nf, mf)
+	video := &Video{n, l, s, tn, d}
+	i := SaveV(video)
+	if i != nil {
+		te, err := os.Open(path)
+		if err == nil {
+			defer te.Close()
+			os.Remove(path)
+		}
+		chv <- &FileError{
+			IsError:   true,
+			ErrorType: err.Error(),
+			IsSucc:    false,
+		}
+		return
+	}
+	chv <- &FileError{
+		IsError:   false,
+		ErrorType: "",
+		IsSucc:    true,
+	}
+}
+
+func handelUploadImages(ch chan *FileError, fhm *multipart.FileHeader, tn time.Time, l, d string) {
+	mf, err := fhm.Open()
+	if err != nil {
+		log.Error(err.Error())
+		ch <- &FileError{
+			IsError:   true,
+			ErrorType: err.Error(),
+			IsSucc:    false,
+		}
+		return
+	}
+	defer mf.Close()
+	s := fhm.Size
+	if !checkFileName(fhm.Filename) {
+		log.Errorf("File %s name error", fhm.Filename)
+		if err != nil {
+			ch <- &FileError{
+				IsError:   true,
+				ErrorType: "File name does not contian extension",
+				IsSucc:    false,
+			}
+			return
+		}
+	}
+	ext := strings.Split(fhm.Filename, ".")[1]
+	h := sha1.New()
+	io.Copy(h, mf)
+	n := fmt.Sprintf("%x", h.Sum(nil)) + "." + ext
+	wd, err := os.Getwd()
+	if err != nil {
+		log.Error(err.Error())
+		ch <- &FileError{
+			IsError:   true,
+			ErrorType: err.Error(),
+			IsSucc:    false,
+		}
+		return
+	}
+	path := filepath.Join(wd, "data", n)
+	nf, err := os.Create(path)
+	defer nf.Close()
+	if err != nil {
+		log.Error(err.Error())
+		ch <- &FileError{
+			IsError:   true,
+			ErrorType: err.Error(),
+			IsSucc:    false,
+		}
+		return
+	}
+	mf.Seek(0, 0)
+	io.Copy(nf, mf)
+	image := &Image{n, l, s, tn, d}
+	scrImage, err := imaging.Open("./data/" + image.Name)
+	if err != nil {
+		log.Error(err.Error())
+		mf.Close()
+		nf.Close()
+		os.Remove(path)
+		ch <- &FileError{
+			IsError:   true,
+			ErrorType: err.Error(),
+			IsSucc:    false,
+		}
+		return
+	}
+	i := Save(image)
+	dstImage := imaging.Thumbnail(scrImage, widthThumbnail, widthThumbnail, imaging.Lanczos)
+	destination := "./data/thumb/" + image.Name
+	it := imaging.Save(dstImage, destination)
+	if i != nil && it != nil {
+		te, err := os.Open(path)
+		if err == nil {
+			defer te.Close()
+			os.Remove(path)
+		}
+		ch <- &FileError{
+			IsError:   true,
+			ErrorType: err.Error(),
+			IsSucc:    false,
+		}
+		return
+	}
+	ch <- &FileError{
+		IsError:   false,
+		ErrorType: "",
+		IsSucc:    true,
+	}
+}
 
 func executeQuery(w http.ResponseWriter, query string, schema graphql.Schema) *graphql.Result {
 	result := graphql.Do(graphql.Params{
