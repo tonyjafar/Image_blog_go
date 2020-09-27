@@ -99,6 +99,12 @@ type AdminStatics struct {
 	VideosLoc      []VideoLoc
 }
 
+type SechsAus49 struct {
+	Lists       [][]int
+	SuperNumber int
+	LosNumber   string
+}
+
 type ImageDesc struct {
 	Desc  string
 	Count string
@@ -206,6 +212,7 @@ func main() {
 	http.HandleFunc("/add-user", addUserAdmin)
 	http.HandleFunc("/info", getInfo)
 	http.HandleFunc("/scharbel", getScharbelTime)
+	http.HandleFunc("/6aus49", playIt)
 	go lastActivity()
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }

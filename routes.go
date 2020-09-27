@@ -2,7 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	"math/rand"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -1273,6 +1275,42 @@ func getScharbelTime(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	tpl.ExecuteTemplate(w, "scharbel.gohtml", &SentData)
+	return
+
+}
+
+func playIt(w http.ResponseWriter, r *http.Request) {
+	if !loggedIn(w, r) {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+		return
+	}
+	c, _ := r.Cookie("session")
+	username := strings.Split(c.Value, ",")[1]
+	isAdmin(username)
+	PlayData := &SechsAus49{
+		Lists:       [][]int{},
+		SuperNumber: 0,
+		LosNumber:   "",
+	}
+	for len(PlayData.Lists) != 14 {
+		newList := getLists()
+		PlayData.Lists = append(PlayData.Lists, newList)
+	}
+
+	rand.Seed(int64(time.Now().Nanosecond()))
+	PlayData.SuperNumber = rand.Intn(10)
+	losNum := []int{}
+	for len(losNum) != 6 {
+		rand.Seed(int64(time.Now().Nanosecond()))
+		randNum := rand.Intn(10)
+		losNum = append(losNum, randNum)
+	}
+	losNnumStr := []string{}
+	for _, v := range losNum {
+		losNnumStr = append(losNnumStr, strconv.Itoa(v))
+	}
+	PlayData.LosNumber = strings.Join(losNnumStr, "")
+	tpl.ExecuteTemplate(w, "6aus49.gohtml", &PlayData)
 	return
 
 }

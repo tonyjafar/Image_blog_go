@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"math/rand"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -603,4 +604,25 @@ func passPolicy(u, p string) (bool, string) {
 		return checkNum, "Password must contain at least one number"
 	}
 	return true, "Sucess"
+}
+
+func getLists() []int {
+	myList := []int{}
+	for len(myList) != 6 {
+		rand.Seed(int64(time.Now().Nanosecond()))
+		randNum := rand.Intn(50)
+		if !checkList(myList, randNum) {
+			myList = append(myList, randNum)
+		}
+	}
+	return myList
+}
+
+func checkList(l []int, i int) bool {
+	for _, v := range l {
+		if v == i {
+			return true
+		}
+	}
+	return false
 }
