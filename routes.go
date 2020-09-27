@@ -110,12 +110,12 @@ func login(w http.ResponseWriter, r *http.Request) {
 			SentData.Loggedin = true
 			http.Redirect(w, r, "/images", http.StatusSeeOther)
 			return
-		} else {
-			log.Errorf("Authentication Failed!! - using username %s", un)
-			SentData.UserError = true
-			tpl.ExecuteTemplate(w, "signin.gohtml", SentData)
-			return
 		}
+		log.Errorf("Authentication Failed!! - using username %s", un)
+		SentData.UserError = true
+		tpl.ExecuteTemplate(w, "signin.gohtml", SentData)
+		return
+
 	}
 	tpl.ExecuteTemplate(w, "signin.gohtml", SentData)
 }
