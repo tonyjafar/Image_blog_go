@@ -611,7 +611,7 @@ func getLists() []int {
 	for len(myList) != 6 {
 		rand.Seed(int64(time.Now().Nanosecond()))
 		randNum := rand.Intn(50)
-		if !checkList(myList, randNum) || randNum != 0 {
+		if !checkList(myList, randNum) && randNum != 0 {
 			myList = append(myList, randNum)
 		}
 	}
