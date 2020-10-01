@@ -99,12 +99,6 @@ type AdminStatics struct {
 	VideosLoc      []VideoLoc
 }
 
-type SechsAus49 struct {
-	Lists       [][]int
-	SuperNumber int
-	LosNumber   string
-}
-
 type ImageDesc struct {
 	Desc  string
 	Count string

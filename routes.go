@@ -1287,7 +1287,11 @@ func playIt(w http.ResponseWriter, r *http.Request) {
 	c, _ := r.Cookie("session")
 	username := strings.Split(c.Value, ",")[1]
 	isAdmin(username)
-	PlayData := &SechsAus49{
+	PlayData := struct {
+		Lists       [][]int
+		SuperNumber int
+		LosNumber   string
+	}{
 		Lists:       [][]int{},
 		SuperNumber: 0,
 		LosNumber:   "",
