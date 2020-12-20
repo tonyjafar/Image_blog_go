@@ -18,6 +18,7 @@
 --
 -- Table structure for table `images`
 --
+USE image_blog;
 
 DROP TABLE IF EXISTS `images`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
