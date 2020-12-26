@@ -227,14 +227,12 @@ func handelUploadImages(ch chan *FileError, fhm *multipart.FileHeader, tn time.T
 	s := fhm.Size
 	if !checkFileName(fhm.Filename) {
 		log.Errorf("File %s name error", fhm.Filename)
-		if err != nil {
-			ch <- &FileError{
-				IsError:   true,
-				ErrorType: fmt.Sprintf("File name %v does not contian extension", fhm.Filename),
-				IsSucc:    false,
-			}
-			return
+		ch <- &FileError{
+			IsError:   true,
+			ErrorType: fmt.Sprintf("File name %v does not contian extension", fhm.Filename),
+			IsSucc:    false,
 		}
+		return
 	}
 	ext := strings.Split(fhm.Filename, ".")[1]
 	h := sha1.New()
