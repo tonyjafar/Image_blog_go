@@ -23,10 +23,10 @@ func index(w http.ResponseWriter, r *http.Request) {
 		if len(testCookie) == 2 {
 			c.MaxAge = cAge
 			username = testCookie[1]
-			isAdmin(username)
 		} else {
 			c.MaxAge = -1
 		}
+		isAdmin(username)
 		http.SetCookie(w, c)
 	}
 	if loggedIn(w, r) {
@@ -138,8 +138,6 @@ func images(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
 		return
 	}
-	username := strings.Split(c.Value, ",")[1]
-	isAdmin(username)
 	if strings.HasSuffix(r.RequestURI, ".css") {
 		w.Header().Set("Content-Type", "text/css; charset=utf-8")
 	}
@@ -262,13 +260,6 @@ func search(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
-	}
-	username := strings.Split(c.Value, ",")[1]
-	SentData.Username = username
-	if !isAdmin(username) {
-		SentData.Admin = false
-	} else {
-		SentData.Admin = true
 	}
 	c.MaxAge = cAge
 	var v bool
@@ -655,8 +646,6 @@ func videos(w http.ResponseWriter, r *http.Request) {
 	}
 	c.MaxAge = cAge
 	http.SetCookie(w, c)
-	username := strings.Split(c.Value, ",")[1]
-	isAdmin(username)
 	rows, err := db.Query(
 		`
 		SELECT name,DATE(created_at),location FROM
@@ -1290,9 +1279,7 @@ func playIt(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
 		return
 	}
-	c, _ := r.Cookie("session")
-	username := strings.Split(c.Value, ",")[1]
-	isAdmin(username)
+
 	PlayData := struct {
 		Lists       [][]int
 		SuperNumber int

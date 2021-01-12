@@ -329,6 +329,8 @@ func loggedIn(w http.ResponseWriter, r *http.Request) bool {
 		username = testCookie[1]
 		cookieSession = testCookie[0]
 	} else {
+		SentData.Loggedin = false
+		SentData.Admin = false
 		return false
 	}
 
@@ -373,6 +375,7 @@ func loggedIn(w http.ResponseWriter, r *http.Request) bool {
 	)
 	SentData.Loggedin = true
 	SentData.Username = username
+	isAdmin(username)
 	return true
 }
 
