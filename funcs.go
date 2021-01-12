@@ -323,9 +323,15 @@ func loggedIn(w http.ResponseWriter, r *http.Request) bool {
 		SentData.Admin = false
 		return false
 	}
-	var session string
-	username := strings.Split(c.Value, ",")[1]
-	cookieSession := strings.Split(c.Value, ",")[0]
+	var session, username, cookieSession string
+	testCookie := strings.SplitN(c.Value, ",", 2)
+	if len(testCookie) == 2 {
+		username = testCookie[1]
+		cookieSession = testCookie[0]
+	} else {
+		return false
+	}
+
 	dbSession := db.QueryRow("select session from image_blog.Users where username = ?", username).Scan(&session)
 	if dbSession != nil {
 		SentData.Loggedin = false

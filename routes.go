@@ -18,10 +18,16 @@ func index(w http.ResponseWriter, r *http.Request) {
 	c, err := r.Cookie("session")
 
 	if err == nil {
-		c.MaxAge = cAge
+		var username string
+		testCookie := strings.SplitN(c.Value, ",", 2)
+		if len(testCookie) == 2 {
+			c.MaxAge = cAge
+			username = testCookie[1]
+			isAdmin(username)
+		} else {
+			c.MaxAge = -1
+		}
 		http.SetCookie(w, c)
-		username := strings.Split(c.Value, ",")[1]
-		isAdmin(username)
 	}
 	if loggedIn(w, r) {
 		rows, err := db.Query(
