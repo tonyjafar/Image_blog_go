@@ -1,6 +1,6 @@
 module tonyjafar/image_blog
 
-go 1.15
+go 1.16
 
 require (
 	github.com/disintegration/imaging v1.6.2
