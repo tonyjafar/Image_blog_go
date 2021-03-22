@@ -31,7 +31,8 @@ jobs:
 
     - name: Build
       run: |
-         cd Image_blog_go
+         ls -l
+         cd ${{GITHUB_WORKSPACE}}/Image_blog_go
          echo '{\n\t"username": "test",\n\t"password": "test1234",\n\t"127.0.0.1": "mysql_con",\n\t"port": "3306",\n\t"database": "image_blog"\n}' >> conf.json
          mkdir -p data/thumb && mkdir data/videos && mkdir logs
          mysql -u test -ptest1234 < template.sql
