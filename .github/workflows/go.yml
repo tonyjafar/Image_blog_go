@@ -1,0 +1,42 @@
+name: Go
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.16
+    
+    - name: setup mysql
+      uses: mirromutth/mysql-action@v1.1
+      with:
+        character set server: 'utf8'
+        collation server: 'utf8_general_ci'
+        mysql version: '8.0'
+        mysql database: 'image_blog'
+        mysql root password: 'test1234'
+        mysql user: 'test'
+        mysql password: 'test1234'
+
+    - name: Build
+      run: |
+         cd Image_blog_go
+         echo '{\n\t"username": "test",\n\t"password": "test1234",\n\t"127.0.0.1": "mysql_con",\n\t"port": "3306",\n\t"database": "image_blog"\n}' >> conf.json
+         mkdir -p data/thumb && mkdir data/videos && mkdir logs
+         mysql -u test -ptest1234 < template.sql
+         go build
+
+    - name: Test
+      run: |
+        go test -v
