@@ -32,7 +32,7 @@ jobs:
     - name: Build
       run: |
          ls -l
-         echo '{\n\t"username": "root",\n\t"password": "test1234",\n\t"ipaddress": "127.0.0.1",\n\t"port": "3306",\n\t"database": "image_blog"\n}' >> conf.json
+         printf '{\n\t"username": "root",\n\t"password": "test1234",\n\t"ipaddress": "127.0.0.1",\n\t"port": "3306",\n\t"database": "image_blog"\n}' >> conf.json
          mkdir -p data/thumb && mkdir data/videos && mkdir logs
          sleep 30 # whaiting for mysql
          mysql -h 127.0.0.1 -u root --password=test1234 < template.sql
