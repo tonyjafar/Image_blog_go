@@ -4,6 +4,7 @@ import (
 	"crypto/sha1"
 	"encoding/json"
 	"fmt"
+	"html"
 	"io"
 	"io/ioutil"
 	"math/rand"
@@ -326,8 +327,8 @@ func loggedIn(w http.ResponseWriter, r *http.Request) bool {
 	var session, username, cookieSession string
 	testCookie := strings.SplitN(c.Value, ",", 2)
 	if len(testCookie) == 2 {
-		username = testCookie[1]
-		cookieSession = testCookie[0]
+		username = html.EscapeString(testCookie[1])
+		cookieSession = html.EscapeString(testCookie[0])
 	} else {
 		SentData.Loggedin = false
 		SentData.Admin = false
