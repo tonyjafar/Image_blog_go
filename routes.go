@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"html"
 	"math/rand"
 	"net/http"
 	"strconv"
@@ -182,7 +183,7 @@ func signout(w http.ResponseWriter, r *http.Request) {
 	}
 	c.MaxAge = -1
 	http.SetCookie(w, c)
-	username := strings.Split(c.Value, ",")[1]
+	username := html.EscapeString(strings.Split(c.Value, ",")[1])
 	SentData.Loggedin = false
 	db.Exec(
 		`
@@ -210,7 +211,7 @@ func addImage(w http.ResponseWriter, r *http.Request) {
 	}
 	c.MaxAge = cAge
 	http.SetCookie(w, c)
-	username := strings.Split(c.Value, ",")[1]
+	username := html.EscapeString(strings.Split(c.Value, ",")[1])
 	if !isAdmin(username) {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
 		return
@@ -596,7 +597,7 @@ func addVideo(w http.ResponseWriter, r *http.Request) {
 	}
 	c.MaxAge = cAge
 	http.SetCookie(w, c)
-	username := strings.Split(c.Value, ",")[1]
+	username := html.EscapeString(strings.Split(c.Value, ",")[1])
 	if !isAdmin(username) {
 		http.Redirect(w, r, "/signin", http.StatusSeeOther)
 		return
