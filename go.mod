@@ -8,6 +8,6 @@ require (
 	github.com/gofrs/uuid v4.0.0+incompatible
 	github.com/graphql-go/graphql v0.7.9
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
-	golang.org/x/crypto v0.0.0-20210421170649-83a5a9bb288b
-	golang.org/x/image v0.0.0-20210220032944-ac19c3e999fb // indirect
+	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a
+	golang.org/x/image v0.0.0-20210504121937-7319ad40d33e // indirect
 )
